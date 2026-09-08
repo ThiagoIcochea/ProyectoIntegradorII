@@ -1,0 +1,512 @@
+<div class="catalog-page">
+  <div
+    class="filter-overlay"
+    [class.is-open]="mostrarFiltros"
+    (click)="cerrarFiltros()">
+  </div>
+
+  <div
+    class="request-overlay"
+    [class.is-open]="mostrarSolicitudMovil"
+    (click)="cerrarSolicitudMovil()">
+  </div>
+
+  <button
+    type="button"
+    class="request-panel__fab"
+    (click)="toggleSolicitudMovil()"
+    [attr.aria-expanded]="mostrarSolicitudMovil"
+    aria-label="Abrir o cerrar Mi Solicitud">
+    <span class="request-panel__fab-text">Mi Solicitud</span>
+    <span class="request-panel__fab-count">{{ requestItems.length }}</span>
+  </button>
+
+  <aside class="filters-panel" [class.is-open]="mostrarFiltros">
+    <div class="filters-panel__header">
+      <div>
+        <span>Catalogo RFQ</span>
+        <h2>Filtros</h2>
+      </div>
+
+      <button
+        type="button"
+        class="filters-panel__close"
+        (click)="cerrarFiltros()"
+        aria-label="Cerrar filtros">
+        &times;
+      </button>
+    </div>
+
+    <div class="active-filters">
+      <span class="active-filters__label">Filtros actuales</span>
+
+      <div class="active-filters__chips" *ngIf="hasActiveFilters; else noActiveFilters">
+        <ng-container *ngFor="let cat of filtros.categorias || []">
+          <span class="filter-chip" *ngIf="selectedCategories.includes(cat.id)">
+            {{ cat.nombre }}
+          </span>
+        </ng-container>
+
+        <ng-container *ngFor="let brand of filtros.marcas || []">
+          <span class="filter-chip" *ngIf="selectedBrands.includes(brand.id)">
+            {{ brand.nombre }}
+          </span>
+        </ng-container>
+
+        <ng-container *ngFor="let cat of filtros.categorias || []">
+          <span
+            class="filter-chip filter-chip--soft"
+            *ngIf="specsPorCategoria[cat.id]?.trim()">
+            {{ specsPorCategoria[cat.id] }}
+          </span>
+        </ng-container>
+      </div>
+
+      <ng-template #noActiveFilters>
+        <p>Sin filtros activos.</p>
+      </ng-template>
+    </div>
+
+    <ng-container *ngIf="loadingFilters; else filtersContent">
+      <div class="skeleton-stack">
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line" *ngFor="let item of [1, 2, 3, 4]"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line" *ngFor="let item of [1, 2, 3]"></div>
+        <div class="skeleton-block skeleton-block--button"></div>
+      </div>
+    </ng-container>
+
+    <ng-template #filtersContent>
+      <div class="filters-panel__body">
+        <div class="filter-section">
+          <div class="filter-header">
+            <h3>Categorias</h3>
+          </div>
+
+          <div *ngFor="let cat of filtros.categorias || []" class="category-item-group">
+            <label class="check-row">
+              <input
+                type="checkbox"
+                (change)="toggleFiltro('cat', cat.id)"
+                [checked]="selectedCategories.includes(cat.id)"
+              />
+              <span>{{ cat.nombre }}</span>
+              <small>{{ cat.cantidad }}</small>
+            </label>
+
+            <div class="specs-inline-input" *ngIf="selectedCategories.includes(cat.id)">
+              <input
+                type="text"
+                [(ngModel)]="specsPorCategoria[cat.id]"
+                placeholder="Espec. para {{ cat.nombre }}..."
+                class="mini-input"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-header">
+            <h3>Marcas</h3>
+          </div>
+
+          <label class="check-row" *ngFor="let m of filtros.marcas || []">
+            <input
+              type="checkbox"
+              (change)="toggleFiltro('marca', m.id)"
+              [checked]="selectedBrands.includes(m.id)"
+            />
+            <span>{{ m.nombre }}</span>
+            <small>{{ m.cantidad }}</small>
+          </label>
+        </div>
+      </div>
+
+      <div class="filters-panel__actions">
+        <button type="button" class="filter-button filter-button--primary" (click)="aplicarFiltrosDesdePanel()">
+          Aplicar filtros
+        </button>
+
+        <button
+          type="button"
+          class="filter-button filter-button--ghost"
+          (click)="limpiarFiltros()"
+          [disabled]="!hasActiveFilters">
+          Limpiar filtros
+        </button>
+      </div>
+    </ng-template>
+  </aside>
+
+  <section class="catalog-content">
+    <div class="catalog-header">
+      <div class="catalog-title">
+        <span>RFQ Marketplace</span>
+        <h1>Catalogo de Equipos</h1>
+      </div>
+
+      <div class="catalog-tools">
+        <button
+          type="button"
+          class="filters-toggle"
+          (click)="toggleFiltros()"
+          [attr.aria-expanded]="mostrarFiltros">
+          Filtros
+          <span *ngIf="hasActiveFilters">{{ activeFilterCount }}</span>
+        </button>
+
+        <div class="catalog-search">
+          <input
+            type="search"
+            name="catalogSearch"
+            [(ngModel)]="searchTerm"
+            (input)="aplicarBusquedaLocal()"
+            placeholder="Buscar productos..."
+            aria-label="Buscar productos en catalogo"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="catalog-tabs" role="tablist" aria-label="Secciones del catalogo RFQ">
+      <button
+        type="button"
+        class="catalog-tab"
+        [class.active]="activeTab === 'productos'"
+        (click)="setActiveTab('productos')">
+        Productos
+      </button>
+
+      <button
+        type="button"
+        class="catalog-tab"
+        [class.active]="activeTab === 'proveedores'"
+        (click)="setActiveTab('proveedores')">
+        Top 10 proveedores
+      </button>
+    </div>
+
+    <ng-container *ngIf="activeTab === 'productos'">
+      <div class="catalog-count" *ngIf="!loadingProducts">
+        {{ products.length }} producto{{ products.length === 1 ? '' : 's' }} disponible{{ products.length === 1 ? '' : 's' }}
+      </div>
+
+      <div class="product-grid" *ngIf="loadingProducts">
+        <div class="product-card product-card--skeleton" *ngFor="let item of skeletonCards">
+          <div class="skeleton-block skeleton-product-image"></div>
+          <div class="product-body">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-block skeleton-block--button"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-grid" *ngIf="!loadingProducts">
+        <article
+          class="product-card"
+          *ngFor="let product of paginatedProducts"
+          (click)="verDetalle(product)"
+          tabindex="0"
+        >
+          <div class="product-image-container">
+            <img
+              *ngIf="getProductImage(product) as imageUrl; else productPlaceholder"
+              alt="Imagen de producto"
+              title="Imagen de producto"
+              [src]="imageUrl"
+              class="producto-img"
+              loading="lazy"
+              decoding="async"
+              (error)="markImageAsFailed(product)"
+            >
+
+            <ng-template #productPlaceholder>
+              <div class="image-placeholder">
+                <span>{{ product.marca?.slice(0, 2) || 'RFQ' }}</span>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="product-body">
+            <div class="product-meta">
+              <span class="brand-label">{{ product.marca }}</span>
+              <span class="category-badge">{{ product.categoria }}</span>
+            </div>
+
+            <h3>{{ product.producto }}</h3>
+
+            <div class="primary-spec" *ngIf="getPrimarySpec(product) as spec">
+              <span>{{ spec.nombre }}</span>
+              <strong>{{ spec.valor }}</strong>
+            </div>
+
+            <p class="description" *ngIf="product.descripcion">{{ product.descripcion }}</p>
+
+            <div class="product-footer">
+              <span class="product-id" *ngIf="product.idProducto">ID #{{ product.idProducto }}</span>
+
+              <div class="product-actions">
+                <button
+                  type="button"
+                  class="detail-button"
+                  (click)="$event.stopPropagation(); verDetalle(product)"
+                >
+                  Ver detalle
+                </button>
+
+                <button
+                  type="button"
+                  class="add-button"
+                  (click)="$event.stopPropagation(); agregarProducto(product)"
+                >
+                  + Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="empty-state" *ngIf="!loadingProducts && products.length === 0">
+        No se encontraron productos para tu busqueda.
+      </div>
+
+      <div class="pagination-container" *ngIf="!loadingProducts && products.length > pageSize">
+        <button
+          type="button"
+          class="pag-btn"
+          (click)="prevPage()"
+          [disabled]="currentPage === 1"
+        >
+          Anterior
+        </button>
+
+        <span class="pag-info">{{ currentPage }} / {{ totalPages }}</span>
+
+        <button
+          type="button"
+          class="pag-btn"
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages"
+        >
+          Siguiente
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="activeTab === 'proveedores'">
+      <section class="ranking-intro">
+        <span>Ranking comercial</span>
+        <h2>Top 10 proveedores</h2>
+        <p>Proveedores destacados por satisfaccion, rese&ntilde;as, cumplimiento y tiempo promedio de entrega.</p>
+      </section>
+
+      <section class="top-provider-grid" *ngIf="loadingTopProviders">
+        <article class="top-provider-card top-provider-card--skeleton" *ngFor="let item of [1, 2, 3, 4]">
+          <div class="skeleton-block ranking-skeleton-rank"></div>
+          <div class="ranking-skeleton-body">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-block skeleton-block--button"></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="top-provider-grid" *ngIf="!loadingTopProviders && topProviders.length > 0">
+        <article class="top-provider-card" *ngFor="let proveedor of topProviders; let i = index">
+          <div class="ranking-number">#{{ i + 1 }}</div>
+
+          <div class="top-provider-content">
+            <div class="top-provider-header">
+              <div class="top-provider-title">
+                <h3>{{ proveedor.razonSocial }}</h3>
+                <p>{{ proveedor.categoriaPrincipal || 'Equipos de red' }}</p>
+              </div>
+
+              <div class="top-provider-badges">
+                <span class="provider-status provider-score-pill">
+                  {{ getScorePercent(proveedor.scoreGeneral) }}
+                </span>
+
+                <span class="provider-status" *ngIf="proveedor.estado; else verifiedStatus">
+                  {{ proveedor.estado }}
+                </span>
+
+                <ng-template #verifiedStatus>
+                  <span class="provider-status" *ngIf="proveedor.verificado">Verificado</span>
+                </ng-template>
+              </div>
+            </div>
+
+            <div class="top-provider-metrics">
+              <div class="ranking-metric">
+                <span>Rese&ntilde;as</span>
+               <strong>{{ proveedor.totalResenas || 0 }}</strong>
+              </div>
+
+              <div class="ranking-metric">
+                <span>Likes</span>
+             <strong>{{ proveedor.likes || 0 }}</strong>
+              </div>
+
+              <div class="ranking-metric">
+                <span>Dislikes</span>
+                <strong>{{ proveedor.dislikes || 0 }}</strong>
+              </div>
+
+              <div class="ranking-metric">
+                <span>Satisfaccion</span>
+                <strong>{{ proveedor.satisfaccion || 0 }}%</strong>
+              </div>
+
+              <div class="ranking-metric">
+                <span>Entrega prom.</span>
+                <strong>{{ formatDays(proveedor.tiempoEntregaPromedio) }}</strong>
+              </div>
+
+              <div class="ranking-metric">
+                <span>Cumplimiento</span>
+                <strong>{{ formatPercent(proveedor.cumplimiento) }}</strong>
+              </div>
+            </div>
+
+            <div class="ranking-progress-group">
+              <div class="ranking-progress">
+                <div class="ranking-progress__label">
+                  <span>Satisfaccion de clientes</span>
+                  <strong>{{ proveedor.satisfaccion || 0 }}%</strong>
+                </div>
+                <div class="ranking-progress__track">
+                  <span [style.width.%]="getTopProviderProgress(proveedor.satisfaccion)"></span>
+                </div>
+              </div>
+
+              <div class="ranking-progress">
+                <div class="ranking-progress__label">
+                  <span>Cumplimiento</span>
+                  <strong>{{ formatPercent(proveedor.cumplimiento) }}</strong>
+                </div>
+                <div class="ranking-progress__track">
+                  <span [style.width.%]="getTopProviderProgress(proveedor.cumplimiento)"></span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </article>
+      </section>
+
+      <div class="empty-state empty-state--providers"
+     *ngIf="!loadingTopProviders && topProviders.length === 0">
+        No hay informacion de proveedores disponible.
+      </div>
+    </ng-container>
+  </section>
+
+  <aside class="request-panel" [class.is-open]="mostrarSolicitudMovil">
+    <div class="request-panel__header">
+      <div class="request-panel__title-group">
+        <div class="request-panel__step">
+          RFQ Inteligente
+        </div>
+
+        <div class="request-panel__title-row">
+          <div>
+            <h2>Mi Solicitud</h2>
+            <p>{{ requestItems.length }} items seleccionados</p>
+          </div>
+
+          <div class="request-panel__header-actions">
+            <span class="request-panel__counter">{{ requestItems.length }}</span>
+            <button
+              type="button"
+              class="request-panel__close"
+              (click)="cerrarSolicitudMovil()"
+              aria-label="Cerrar Mi Solicitud">
+              &times;
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="request-list">
+      <div class="request-item" *ngFor="let item of requestItems">
+        <div class="request-info">
+          <div class="request-top">
+            <strong>{{ item.name }}</strong>
+
+            <button
+              type="button"
+              (click)="eliminarDelCarrito(item)"
+              class="btn-remove"
+              aria-label="Eliminar producto">
+              &times;
+            </button>
+          </div>
+
+          <div class="qty-row">
+            <button type="button" (click)="disminuir(item)">-</button>
+            <strong>{{ item.qty }}</strong>
+            <button type="button" (click)="aumentar(item)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="request-config">
+      <div class="config-item config-item--full">
+        <label for="prioridad">Prioridad:</label>
+
+        <select
+          id="prioridad"
+          [(ngModel)]="prioridad"
+          class="priority-select"
+        >
+          <option value="BALANCEADO">Balanceado</option>
+          <option value="PRECIO">Precio</option>
+          <option value="TIEMPO">Tiempo</option>
+          <option value="CALIDAD">Calidad</option>
+        </select>
+      </div>
+
+      <div class="config-item config-item--full">
+        <label>Presupuesto:</label>
+
+        <div class="price-inputs">
+          <input
+            type="number"
+            [(ngModel)]="precioMin"
+            placeholder="Min"
+            aria-label="Presupuesto minimo"
+          >
+
+          <input
+            type="number"
+            [(ngModel)]="precioMax"
+            placeholder="Max"
+            aria-label="Presupuesto maximo"
+          >
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      (click)="buscarProveedoresRFQ()"
+      class="primary-action"
+      [disabled]="requestItems.length === 0 || searchingProviders"
+    >
+      {{ searchingProviders ? 'Buscando proveedores...' : 'Buscar Proveedores RFQ ->' }}
+    </button>
+
+    <div class="rfq-search-skeleton" *ngIf="searchingProviders">
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line skeleton-line--short"></div>
+    </div>
+  </aside>
+</div>

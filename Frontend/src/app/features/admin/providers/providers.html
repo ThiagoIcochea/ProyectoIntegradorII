@@ -1,0 +1,267 @@
+<div class="admin-providers-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <span>Red de proveedores</span>
+
+      <h1>Proveedores</h1>
+
+      <p>
+        Supervisa proveedores registrados, estado e integración API.
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="summary-grid">
+
+    <div class="summary-card">
+
+      <span>Total proveedores</span>
+
+      <strong>
+        {{ getTotalProveedores() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card">
+
+      <span>Activos</span>
+
+      <strong>
+        {{ getActivos() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card">
+
+      <span>API conectada</span>
+
+      <strong>
+        {{ getApiConectada() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card">
+
+      <span>Suspendidos</span>
+
+      <strong>
+        {{ getSuspendidos() }}
+      </strong>
+
+    </div>
+
+  </div>
+
+  <section class="providers-card">
+
+    <div class="providers-card__header">
+
+      <h2>Listado de proveedores</h2>
+
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Buscar proveedor, correo o estado..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarProviders()"
+      />
+
+    </div>
+
+    <div class="providers-table">
+
+      <div class="providers-table__head">
+
+        <div>Proveedor</div>
+
+        <div>Correo</div>
+
+        <div>RUC</div>
+
+        <div>API</div>
+
+        <div>Tipo API</div>
+
+        <div>Estado</div>
+
+      </div>
+
+      <ng-container *ngIf="loading">
+        <div
+          class="providers-table__row providers-table__row--skeleton"
+          *ngFor="let row of skeletonRows"
+        >
+          <div class="skeleton-line" *ngFor="let item of [1, 2, 3, 4, 5, 6]"></div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!loading">
+        <div
+          class="providers-table__row"
+          *ngFor="let provider of filteredProviders"
+        >
+
+        <div class="provider-cell">
+
+          <div class="avatar">
+
+            {{
+              provider?.razonSocial?.charAt(0)
+              || '?'
+            }}
+
+          </div>
+
+          <strong>
+
+            {{
+              provider?.razonSocial
+            }}
+
+          </strong>
+
+        </div>
+
+        <div>
+
+          {{
+            provider?.correo
+          }}
+
+        </div>
+
+        <div>
+
+          {{
+            provider?.ruc
+          }}
+
+        </div>
+
+        <div>
+
+          <span
+            class="api-status"
+
+            [class.pending]="
+              provider?.estadoApi === 'PENDIENTE'
+            "
+
+            [class.error]="
+              provider?.estadoApi === 'ERROR'
+            "
+          >
+
+            {{
+              provider?.estadoApi
+            }}
+
+          </span>
+
+        </div>
+
+        <div>
+
+          {{
+            provider?.apiTipo
+            || 'No definida'
+          }}
+
+        </div>
+
+        <div>
+
+          <span
+            class="status"
+
+            [class.observed]="
+              provider?.estado === 'SUSPENDIDO'
+            "
+          >
+
+            {{
+              provider?.estado
+            }}
+
+          </span>
+
+        </div>
+
+        <div>
+          <button type="button" class="btn-secondary" (click)="abrirGestion(provider)">
+            Gestionar
+          </button>
+        </div>
+
+        </div>
+      </ng-container>
+
+      <div
+        class="empty-state"
+        *ngIf="!loading && filteredProviders.length === 0"
+      >
+
+        No se encontraron proveedores.
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <div class="modal-overlay" *ngIf="showManageModal">
+    <div class="product-modal" role="dialog" aria-modal="true" aria-labelledby="admin-provider-modal-title">
+      <div class="modal-header">
+        <div>
+          <span>Configuración</span>
+          <h2 id="admin-provider-modal-title">{{ selectedProvider?.razonSocial || 'Gestionar proveedor' }}</h2>
+        </div>
+        <button type="button" class="btn-secondary" (click)="cerrarGestion()" aria-label="Cerrar modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="config-section">
+          <h3>Información general</h3>
+
+          <label>Proveedor</label>
+          <input [value]="selectedProvider?.razonSocial" disabled>
+
+          <label>Correo</label>
+          <input [value]="selectedProvider?.correo" disabled>
+
+          <label>Estado</label>
+          <select [(ngModel)]="estadoSeleccionado">
+            <option>Activo</option>
+            <option>Inactivo</option>
+          </select>
+
+          <label>URL API</label>
+          <input [(ngModel)]="apiUrl" placeholder="https://...">
+
+          <label>Tipo API</label>
+          <select [(ngModel)]="apiTipo">
+            <option value="REST">REST</option>
+            <option value="GRAPHQL">GRAPHQL</option>
+          </select>
+
+          <label>Token API</label>
+          <input [(ngModel)]="apiToken" type="password" placeholder="Token de integración">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cerrarGestion()">Cancelar</button>
+        <button class="btn-secondary" (click)="guardarGestion()">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+
+</div>

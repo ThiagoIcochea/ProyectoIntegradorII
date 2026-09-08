@@ -1,0 +1,99 @@
+<!-- Backend touchpoint: historical request list and status labels are fed by the historial endpoint. -->
+<div class="history-page">
+
+  <div class="page-header">
+    <div>
+      <span>Archivo de compras</span>
+      <h1>Historial</h1>
+      <p>Consulta solicitudes cerradas, completadas o canceladas.</p>
+    </div>
+  </div>
+
+  <section class="history-card">
+
+    <div class="history-card__header">
+
+      <h2>Solicitudes anteriores</h2>
+
+      <div class="filters">
+
+        <button
+          [class.active]="filtroActivo === 'TODOS'"
+          (click)="filtrar('TODOS')">
+          Todos
+        </button>
+
+        <button
+          [class.active]="filtroActivo === 'COMPLETADOS'"
+          (click)="filtrar('COMPLETADOS')">
+          Completados
+        </button>
+
+        <button
+          [class.active]="filtroActivo === 'CANCELADOS'"
+          (click)="filtrar('CANCELADOS')">
+          Cancelados
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="history-table">
+
+      <div class="history-table__head">
+        <div>Código</div>
+        <div>Proveedor</div>
+        <div>Descripción</div>
+        <div>Monto</div>
+        <div>Creación</div>
+        <div>Última actualización</div>
+        <div>Estado</div>
+        <div>Acciones</div>
+      </div>
+
+      <div class="history-table__row" *ngFor="let item of history">
+
+        <div class="code">{{ item.code }}</div>
+
+        <div>{{ item.provider }}</div>
+
+        <div>{{ item.description }}</div>
+
+        <div>{{ item.amount }}</div>
+
+        <div>{{ item.createdDate }}</div>
+
+        <div>{{ item.updatedDate }}</div>
+
+        <div>
+          <span
+            class="status"
+            [class.cancelled]="item.status === 'Cancelada'">
+
+            {{ item.status }}
+
+          </span>
+        </div>
+
+        <div class="row-actions">
+          <button type="button" (click)="verTracking(item)" title="Ver tracking">
+            Tracking
+          </button>
+
+          <button
+            type="button"
+            class="claim"
+            (click)="generarReclamo(item)"
+            title="Generar reclamo">
+            Reclamo
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

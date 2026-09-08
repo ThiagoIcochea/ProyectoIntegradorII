@@ -1,0 +1,28 @@
+<button
+  type="button"
+  class="voice-fab"
+  [class.is-listening]="listening"
+  [class.is-thinking]="thinking"
+  [style.right.px]="fabRight"
+  [style.bottom.px]="fabBottom"
+  [style.left.px]="fabLeft"
+  [style.top.px]="fabTop"
+  (pointerdown)="onFabPointerDown($event)"
+  (click)="onFabClick($event)"
+  title="Asistente por voz">
+  <span class="voice-fab__icon" aria-hidden="true"></span>
+  <span class="voice-fab__pulse" aria-hidden="true"></span>
+</button>
+
+<div
+  *ngIf="statusRendered"
+  class="voice-status"
+  [class.is-visible]="statusVisible"
+  role="status"
+  aria-live="polite">
+  <strong>{{ listening ? 'Escuchando' : thinking ? 'Procesando' : 'Asistente' }}</strong>
+  <span class="voice-status__message">
+    {{ listening ? 'Habla con naturalidad.' : thinking ? 'Consultando IA...' : answer }}
+  </span>
+  <span *ngIf="transcript" class="voice-status__transcript">“{{ transcript }}”</span>
+</div>

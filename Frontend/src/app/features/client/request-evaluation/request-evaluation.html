@@ -1,0 +1,135 @@
+<div class="evaluation-page">
+
+  <div class="page-title">
+
+    <span>Post-entrega</span>
+
+    <h1>Evaluar proveedor</h1>
+
+    <p>
+      Tu experiencia ayudará a mejorar la calidad de nuestra red B2B.
+    </p>
+
+  </div>
+
+  <div class="evaluation-grid">
+
+    <!-- FORMULARIO -->
+
+    <section class="evaluation-card">
+
+      <h2>Calificación del servicio</h2>
+
+      <!-- SERVICIO -->
+
+      <div class="rating-group">
+
+        <label>Servicio</label>
+
+        <div class="stars">
+
+          <span
+            *ngFor="let star of [1,2,3,4,5]"
+            (click)="setRating('servicio',star)"
+            [class.active]="star<=servicio">
+
+            ★
+
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- CALIDAD -->
+
+      <div class="rating-group">
+
+        <label>Calidad del producto</label>
+
+        <div class="stars">
+
+          <span
+            *ngFor="let star of [1,2,3,4,5]"
+            (click)="setRating('calidad',star)"
+            [class.active]="star<=calidad">
+
+            ★
+
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- TIEMPO -->
+
+      <div class="rating-group">
+
+        <label>Tiempo de entrega</label>
+
+        <div class="stars">
+
+          <span
+            *ngFor="let star of [1,2,3,4,5]"
+            (click)="setRating('tiempo',star)"
+            [class.active]="star<=tiempo">
+
+            ★
+
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- COMUNICACION -->
+
+      <div class="rating-group">
+
+        <label>Comunicación</label>
+
+        <div class="stars">
+
+          <span
+            *ngFor="let star of [1,2,3,4,5]"
+            (click)="setRating('comunicacion',star)"
+            [class.active]="star<=comunicacion">
+
+            ★
+
+          </span>
+
+        </div>
+
+      </div>
+
+      <label>Comentario</label>
+
+      <textarea
+        [(ngModel)]="comment"
+        [disabled]="submitting"
+        placeholder="Cuéntanos cómo fue tu experiencia...">
+      </textarea>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <button
+        class="submit-btn"
+        (click)="submitEvaluation()"
+        [disabled]="submitting">
+
+        Enviar evaluación
+
+      </button>
+
+    </section>
+
+    <!-- INFORMACIÓN -->
+
+   
+  </div>
+
+</div>

@@ -1,0 +1,242 @@
+<div class="quotation-page" *ngIf="provider">
+
+  <div class="page-title">
+
+    <a routerLink="/app/rfq/results" class="back-button">
+      &larr;
+    </a>
+
+    <div>
+      <span>Lista para aprobaci&oacute;n (Paso 3 de 3)</span>
+
+      <h1>Detalle de Cotizaci&oacute;n</h1>
+
+      <p>
+        Cotizaci&oacute;n ID:
+        #COT-2026-{{ provider.idProveedor }}-{{ provider.totalCotizacion | number:'1.0-0' }}
+      </p>
+    </div>
+
+  </div>
+
+  <section class="supplier-card">
+
+    <div class="supplier-icon">RFQ</div>
+
+    <div class="supplier-info">
+      <h2>{{ provider.nombreProveedor }}</h2>
+
+      <p>
+        Score comercial: {{ provider.scoreFinal | number:'1.1-1' }}
+      </p>
+
+      <div class="supplier-badges">
+        <span>Socio de Negocio Verificado</span>
+        <span>Garant&iacute;a Local</span>
+      </div>
+    </div>
+
+    <div class="validity-box">
+      <span>V&aacute;lido hasta</span>
+      <strong>{{ fechaValidez }}</strong>
+    </div>
+
+  </section>
+
+  <div class="quotation-grid">
+
+    <section class="detail-card">
+
+      <div class="card-header">
+        <h2>Productos incluidos</h2>
+        <p>Precios calculados autom&aacute;ticamente.</p>
+      </div>
+
+      <div class="quotation-table">
+
+        <div class="quotation-table__head">
+          <div>Producto</div>
+          <div>Cant.</div>
+          <div>Precio unit.</div>
+          <div>Subtotal</div>
+        </div>
+
+        <div class="quotation-table__row" *ngFor="let product of products">
+
+          <div class="product-cell">
+            <div class="product-thumb"></div>
+
+            <div>
+              <strong>{{ product.nombreProducto }}</strong>
+              <span>SKU-{{ product.idProducto }}</span>
+            </div>
+          </div>
+
+          <div>{{ product.cantidad }}</div>
+
+          <div>
+            <div>
+              <strong>S/ {{ product.precioUnitario }}</strong>
+            </div>
+
+            <div *ngIf="product.precioBase && product.precioBase !== product.precioUnitario">
+              <s>S/ {{ product.precioBase }}</s>
+            </div>
+
+            <div *ngIf="product.tipoDescuento">
+              {{ product.tipoDescuento }} - {{ product.valorDescuento }}
+              <span *ngIf="product.tipoDescuento === 'PRODUCTO'">%</span>
+            </div>
+          </div>
+
+          <div>S/ {{ product.subtotal }}</div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <aside class="summary-card">
+
+      <h2>Resumen de Cotizaci&oacute;n</h2>
+
+      <div class="summary-list">
+
+        <div>
+          <span>Subtotal</span>
+          <strong>S/ {{ subtotal }}</strong>
+        </div>
+
+        <div>
+          <span>IGV (18%)</span>
+          <strong>S/ {{ igv }}</strong>
+        </div>
+
+        <div>
+          <span>Total</span>
+          <strong>S/ {{ total }}</strong>
+        </div>
+
+      </div>
+
+      <div class="ruc-box">
+        <label>RUC de la empresa compradora</label>
+
+        <input
+          type="text"
+          [(ngModel)]="rucEmpresa"
+          placeholder="Ingrese RUC (11 digitos)"
+          maxlength="11"
+        />
+      </div>
+
+      <div class="delivery-location-box">
+        <label>Direcci&oacute;n de entrega</label>
+
+        <button
+          type="button"
+          class="location-selector"
+          (click)="abrirMapaModal()">
+
+          <span class="location-selector__icon" aria-hidden="true">&#128205;</span>
+
+          <span class="location-selector__content">
+            <strong>{{ getLocationSummary() }}</strong>
+            <small *ngIf="getSelectedCoordinatesLabel()">
+              {{ getSelectedCoordinatesLabel() }}
+            </small>
+          </span>
+
+          <span class="location-selector__action">
+            {{ direccionEntrega ? 'Cambiar' : 'Seleccionar' }}
+          </span>
+
+        </button>
+      </div>
+
+      <button
+        (click)="confirmarOrden()"
+        class="btn-primary">
+        {{ loading ? 'Procesando...' : 'Aceptar y Proceder al Pago' }}
+      </button>
+
+    </aside>
+
+  </div>
+
+</div>
+
+<div
+  class="location-modal-overlay"
+  *ngIf="mostrarMapaModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="locationModalTitle">
+
+  <section class="location-modal-card">
+
+    <header class="location-modal-header">
+      <div>
+        <span>Entrega RFQ</span>
+        <h2 id="locationModalTitle">Seleccionar ubicaci&oacute;n de entrega</h2>
+        <p>Marca en el mapa el punto donde deseas recibir el pedido.</p>
+      </div>
+
+      <button
+        type="button"
+        class="location-modal-close"
+        (click)="cerrarMapaModal()"
+        aria-label="Cerrar modal">
+        &times;
+      </button>
+    </header>
+
+    <div class="location-map-shell">
+      <div id="quotationMap" class="location-map"></div>
+    </div>
+
+    <div class="location-modal-form">
+      <label for="deliveryAddressInput">Direcci&oacute;n escrita</label>
+      <input
+        id="deliveryAddressInput"
+        type="text"
+        [(ngModel)]="tempLocation.address"
+        placeholder="Ej. Jiron Cajamarca 247, Lima"
+      />
+    </div>
+
+    <div class="location-coordinate-card">
+      <span>Ubicaci&oacute;n seleccionada</span>
+      <ng-container *ngIf="hasTempLocation(); else noTempLocation">
+        <strong>
+          {{ tempLocation.address || (resolvingLocationAddress ? 'Buscando direccion...' : 'Direccion no disponible') }}
+        </strong>
+        <small>{{ getTempCoordinatesLabel() }}</small>
+      </ng-container>
+
+      <ng-template #noTempLocation>
+        <strong>Haz clic en el mapa para marcar el punto de entrega.</strong>
+      </ng-template>
+    </div>
+
+    <footer class="location-modal-actions">
+      <button
+        type="button"
+        class="location-cancel-btn"
+        (click)="cerrarMapaModal()">
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="location-confirm-btn"
+        [disabled]="!hasTempLocation() && !tempLocation.address"
+        (click)="confirmarUbicacion()">
+        Confirmar ubicaci&oacute;n
+      </button>
+    </footer>
+
+  </section>
+
+</div>

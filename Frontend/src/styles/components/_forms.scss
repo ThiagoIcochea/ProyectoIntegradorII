@@ -1,0 +1,70 @@
+﻿.form-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.45rem;
+
+	label {
+		color: $text-primary;
+		font-size: 0.92rem;
+		font-weight: 600;
+	}
+
+	input,
+	select,
+	textarea {
+		@include control-base;
+	}
+
+	textarea {
+		min-height: 128px;
+		resize: vertical;
+	}
+
+	small,
+	.form-help {
+		color: $text-muted;
+		font-size: 0.82rem;
+		line-height: 1.5;
+	}
+
+	.form-error {
+		color: var(--theme-danger-text);
+		font-size: 0.82rem;
+	}
+}
+
+.input-row {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.checkbox-row {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	color: $text-secondary;
+
+	input {
+		width: 18px;
+		height: 18px;
+		accent-color: $primary;
+	}
+}
+
+.search-field {
+	@include control-base;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	min-height: 48px;
+
+	input {
+		background: transparent;
+		border: 0;
+		padding: 0;
+		min-height: 0;
+		box-shadow: none;
+	}
+}
+

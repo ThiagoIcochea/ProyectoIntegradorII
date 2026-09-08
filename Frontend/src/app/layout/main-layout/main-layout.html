@@ -1,0 +1,521 @@
+<!-- Backend touchpoint: sidebar, topbar and user profile rendering are controlled from this shell. -->
+<div class="app-shell">
+  <div
+    class="sidebar-overlay"
+    [class.is-open]="menuMovilAbierto"
+    (click)="cerrarMenuMovil()">
+  </div>
+
+  <aside class="sidebar" [class.is-open]="menuMovilAbierto">
+    <div class="sidebar__brand">
+      <div class="sidebar__logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" role="presentation" focusable="false">
+          <path d="M4 7.5L12 3l8 4.5v9L12 21l-8-4.5z" fill="currentColor" opacity="0.2"></path>
+          <path d="M7 9h10v2H7zm0 4h10v2H7z" fill="currentColor"></path>
+        </svg>
+      </div>
+
+      <div>
+        <strong>Nethink S.A.C</strong>
+
+        <span>
+          {{ isAdmin ? 'Administrador' : isProvider ? 'Proveedor' : 'Cliente' }}
+        </span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="isClient">
+      <nav class="sidebar__nav">
+
+        <a
+          [routerLink]="['/app/dashboard']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Inicio
+        </a>
+
+        <a
+          [routerLink]="['/app/rfq/catalog']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Catálogo RFQ
+        </a>
+
+        <a
+          [routerLink]="['/app/requests']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Mis Solicitudes
+        </a>
+
+        <a
+          [routerLink]="['/app/history']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Historial
+        </a>
+
+        <a
+          [routerLink]="['/app/profile']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Perfil
+        </a>
+
+      </nav>
+    </ng-container>
+
+    <ng-container *ngIf="isProvider && canAccessProviderShell">
+
+      <div class="sidebar__badge">
+        Proveedor
+      </div>
+
+      <nav class="sidebar__nav">
+
+        <a
+          *ngIf="canAccessProviderDashboard"
+          [routerLink]="['/app/provider/dashboard']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Dashboard
+        </a>
+
+        <a
+          [routerLink]="['/app/provider/requests']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Solicitudes
+
+          <span class="sidebar__count">
+            {{ providerRequestCount }}
+          </span>
+        </a>
+
+        <a
+          [routerLink]="['/app/provider/payments']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Pagos
+
+          <span class="sidebar__count">
+            {{ providerPaymentCount }}
+          </span>
+        </a>
+
+        <a
+          [routerLink]="['/app/provider/deliveries']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Entregas
+
+          <span class="sidebar__count">
+            {{ providerDeliveryCount }}
+          </span>
+        </a>
+
+
+        <a
+          [routerLink]="['/app/provider/claims']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Reclamos
+
+          <span class="sidebar__count">
+            {{ providerClaimCount }}
+          </span>
+        </a>
+        <a
+          [routerLink]="['/app/provider/products']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Productos
+        </a>
+
+        <a
+          [routerLink]="['/app/provider/api-settings']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Configuración API
+        </a>
+
+        <a
+          [routerLink]="['/app/provider/profile']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Perfil
+        </a>
+
+      </nav>
+    </ng-container>
+
+    <ng-container *ngIf="isAdmin">
+
+      <div class="sidebar__badge sidebar__badge--admin">
+        Admin
+      </div>
+
+      <nav class="sidebar__nav">
+
+        <a
+          [routerLink]="['/app/admin/dashboard']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Dashboard
+        </a>
+
+        <a
+          [routerLink]="['/app/admin/users']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Usuarios
+        </a>
+
+        <a
+          [routerLink]="['/app/admin/providers']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Proveedores
+        </a>
+
+        <a
+          [routerLink]="['/app/admin/rfqs']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Solicitudes RFQ
+        </a>
+
+        <a
+          [routerLink]="['/app/admin/products']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Catálogo de Productos
+        </a>
+
+        <a
+          [routerLink]="['/app/admin/integrations']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Integraciones & API
+        </a>
+
+        <a
+          [routerLink]="['/app/admin/security']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Seguridad
+        </a>
+
+        <a
+          [routerLink]="['/app/admin/logs']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar__link"
+          (click)="cerrarMenuMovil()">
+          Logs del Sistema
+        </a>
+
+      </nav>
+    </ng-container>
+
+    <div class="sidebar__footer">
+      <button
+        type="button"
+        class="sidebar__link sidebar__link--logout"
+        (click)="logout()">
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-content">
+
+    <header class="topbar" [class.topbar--provider]="isProvider">
+
+      <button
+        type="button"
+        class="topbar__menu-button"
+        (click)="toggleMenuMovil()"
+        [attr.aria-expanded]="menuMovilAbierto"
+        aria-label="Abrir menú lateral">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <form
+        class="topbar__search"
+        *ngIf="isClient"
+        (ngSubmit)="ejecutarBusquedaGlobal()">
+        <input
+          type="search"
+          name="globalSearchTerm"
+          [(ngModel)]="globalSearchTerm"
+          placeholder="Buscar dentro del sistema..."
+          aria-label="Buscar dentro del sistema"
+        />
+
+        <button
+          type="submit"
+          aria-label="Buscar">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M10.5 18a7.5 7.5 0 1 1 5.3-12.8 7.5 7.5 0 0 1-5.3 12.8Zm0-2a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Zm6.2.3 4 4-1.4 1.4-4-4 1.4-1.4Z" fill="currentColor"></path>
+          </svg>
+        </button>
+      </form>
+
+      <div class="topbar__actions" *ngIf="isProvider">
+        <span
+          class="api-pill"
+          [class.api-pill--ok]="estadoApi === 'OK'"
+          [class.api-pill--error]="estadoApi !== 'OK'"
+          [attr.aria-label]="'Estado de API: ' + estadoApi"
+          [title]="'Estado de API: ' + estadoApi">
+          API {{ estadoApi }}
+        </span>
+      </div>
+
+      <div class="topbar__user">
+
+        <button
+          type="button"
+          class="theme-toggle"
+          (click)="toggleTheme()"
+          [title]="isDarkTheme ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+          [attr.aria-label]="isDarkTheme ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'">
+          <svg *ngIf="isDarkTheme" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.42-1.42M4.92 19.08l1.42-1.42m11.32 0 1.42 1.42M4.92 4.92l1.42 1.42M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+          </svg>
+          <svg *ngIf="!isDarkTheme" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M20.4 15.2A8.5 8.5 0 0 1 8.8 3.6 8.5 8.5 0 1 0 20.4 15.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+          </svg>
+        </button>
+
+        <button
+          *ngIf="isProvider"
+          type="button"
+          class="provider-plan-trigger"
+          (click)="abrirPlanesProveedor()">
+          <span>Plan actual</span>
+          <strong>{{ currentProviderPlan.name }}</strong>
+          <small>{{ currentProviderPlan.badge }}</small>
+        </button>
+
+        <div class="topbar__user-info">
+          <strong>
+            {{ nombreCompleto }}
+          </strong>
+
+          <span>
+            {{ nombreRol }}
+          </span>
+        </div>
+
+        <ng-container *ngIf="fotoPerfilValida; else avatarIniciales">
+
+          <div class="topbar__avatar">
+
+            <img
+              [src]="fotoPerfil"
+              alt="Foto Perfil"
+              class="topbar__avatar-img"
+              (error)="imagenError()"
+            />
+
+          </div>
+
+        </ng-container>
+
+        <ng-template #avatarIniciales>
+
+          <div class="topbar__avatar">
+            {{ iniciales }}
+          </div>
+
+        </ng-template>
+
+      </div>
+
+    </header>
+
+    <main class="app-main">
+      <ng-container *ngIf="isProvider && !canAccessProviderShell; else providerShellContent">
+        <section class="provider-access-block">
+          <h2>Acceso al panel proveedor bloqueado</h2>
+          <p>{{ providerAccessMessage || 'Tu plan no está activo. Actualiza a Estándar o Premium para continuar.' }}</p>
+          <button type="button" class="provider-plan-primary" (click)="abrirPlanesProveedor()">
+            Actualizar plan
+          </button>
+        </section>
+      </ng-container>
+
+      <ng-template #providerShellContent>
+        <ng-container *ngIf="isProvider && isProviderDashboardRoute && !canAccessProviderDashboard; else providerContent">
+          <section class="provider-access-block">
+            <h2>Dashboard disponible solo con Premium</h2>
+            <p>Tu plan {{ currentProviderPlan.name }} permite usar los demás apartados del proveedor. Cambia a Premium para habilitar el dashboard.</p>
+            <button type="button" class="provider-plan-primary" (click)="abrirPlanesProveedor()">
+              Cambiar plan
+            </button>
+          </section>
+        </ng-container>
+      </ng-template>
+
+      <ng-template #providerContent>
+        <router-outlet></router-outlet>
+      </ng-template>
+    </main>
+  </div>
+
+  <div
+    class="provider-plan-backdrop"
+    *ngIf="plansModalOpen"
+    (click)="cerrarPlanesProveedor()">
+  </div>
+
+  <section
+    class="provider-plan-modal"
+    *ngIf="plansModalOpen"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="provider-plan-title">
+    <header class="provider-plan-modal__header">
+      <div>
+        <span>Planes para proveedores</span>
+        <h2 id="provider-plan-title">Cambiar plan</h2>
+      </div>
+
+      <button
+        type="button"
+        class="provider-plan-close"
+        (click)="cerrarPlanesProveedor()"
+        aria-label="Cerrar planes">
+        x
+      </button>
+    </header>
+
+    <div class="provider-plan-grid">
+      <article
+        class="provider-plan-card"
+        *ngFor="let plan of providerPlans"
+        [class.is-selected]="selectedProviderPlanId === plan.id"
+        (click)="seleccionarPlanProveedor(plan.id)">
+        <div class="provider-plan-card__top">
+          <div>
+            <span>{{ plan.badge }}</span>
+            <h3>{{ plan.name }}</h3>
+          </div>
+
+          <strong>
+            {{ plan.price === 0 ? 'Gratis' : ('S/ ' + plan.price) }}
+          </strong>
+        </div>
+
+        <p>{{ plan.description }}</p>
+
+        <ul>
+          <li *ngFor="let feature of plan.features">{{ feature }}</li>
+        </ul>
+      </article>
+    </div>
+
+    <form
+      class="provider-plan-payment"
+      (ngSubmit)="prepararPagoPlanProveedor()">
+      <div class="provider-plan-payment__summary">
+        <div>
+          <span>Plan seleccionado</span>
+          <strong>{{ selectedProviderPlan.name }}</strong>
+        </div>
+
+        <label>
+          Periodo
+          <select
+            name="providerPlanBillingCycle"
+            [(ngModel)]="providerPlanBillingCycle"
+            [disabled]="selectedProviderPlan.id === 1">
+            <option value="1">1 mes</option>
+            <option value="3">3 meses</option>
+            <option value="6">6 meses</option>
+          </select>
+        </label>
+
+        <div>
+          <span>Total</span>
+          <strong>{{ selectedPlanTotal === 0 ? 'S/ 0' : ('S/ ' + selectedPlanTotal) }}</strong>
+        </div>
+      </div>
+
+      <div class="provider-plan-form-grid" *ngIf="selectedProviderPlan.id === 2">
+        <p>El plan Estándar incluye gestión básica. El dashboard del proveedor queda habilitado solo con Premium.</p>
+      </div>
+
+      <div class="provider-plan-form-grid" *ngIf="selectedProviderPlan.id === 3">
+        <p>Premium incluye acceso completo al dashboard del proveedor y todas las funciones avanzadas.</p>
+      </div>
+
+      <div class="provider-plan-free" *ngIf="selectedProviderPlan.id === 1">
+        Freemium queda activo por defecto durante 1 mes. No incluye anuncios a clientes ni reportes avanzados.
+      </div>
+
+      <div class="provider-plan-actions">
+        <p *ngIf="providerPlanPaymentReady">
+          Datos listos: nombre, correo PayPal y monto. Backend creará la orden y enviará al checkout con el total fijado.
+        </p>
+
+        <button type="button" class="provider-plan-secondary" (click)="cerrarPlanesProveedor()">
+          Cancelar
+        </button>
+
+        <button type="submit" class="provider-plan-primary" [disabled]="!canPrepareProviderPlanPayment">
+          {{ selectedProviderPlan.id === 1 ? 'Mantener Freemium' : 'Continuar a PayPal' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <app-voice-assistant></app-voice-assistant>
+</div>
+
+
+

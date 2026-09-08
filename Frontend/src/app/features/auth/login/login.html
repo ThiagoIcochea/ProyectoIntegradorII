@@ -1,0 +1,102 @@
+<!-- Backend touchpoint: login form fields map to /api/auth/login payload and post-login flow. -->
+<div class="login-page">
+  <button
+    type="button"
+    class="login-theme-toggle"
+    (click)="toggleTheme()"
+    [title]="isDarkTheme ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+    [attr.aria-label]="isDarkTheme ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'">
+    <svg *ngIf="isDarkTheme" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3V1.5M12 22.5V21M3 12H1.5M22.5 12H21M5.64 5.64 4.58 4.58M19.42 19.42l-1.06-1.06M18.36 5.64l1.06-1.06M4.58 19.42l1.06-1.06M17 12a5 5 0 1 1-10 0 5 5 0 0 1 10 0Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+    </svg>
+    <svg *ngIf="!isDarkTheme" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20.5 15.3A8.5 8.5 0 0 1 8.7 3.5 8.5 8.5 0 1 0 20.5 15.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+    </svg>
+    <span>{{ isDarkTheme ? 'Tema claro' : 'Tema oscuro' }}</span>
+  </button>
+
+  <div class="login-page__left">
+    <div class="brand-block">
+      <div class="brand-badge">Nethink</div>
+
+      <h1>Plataforma B2B para cotización y compra de productos de red</h1>
+      <p>
+        Gestiona requerimientos, compara proveedores especializados y da seguimiento
+        a tus órdenes desde una sola plataforma.
+      </p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>Cotización de switches, routers, firewalls y access points</span>
+        </div>
+
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>Comparación de proveedores y tiempos de entrega</span>
+        </div>
+
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>Seguimiento de órdenes y control operativo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-page__right">
+    <div class="login-card">
+      <div class="login-card__header">
+        <h2>Iniciar sesión</h2>
+        <p>Accede a tu cuenta para continuar</p>
+      </div>
+
+      <form class="login-form" (ngSubmit)="login()">
+        <div class="form-group">
+          <label for="email">Correo corporativo</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            [ngModel]="email"
+            (ngModelChange)="onEmailChange($event)"
+            placeholder="empresa@correo.com"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input id="password" name="password" type="password" [(ngModel)]="password"  placeholder="Ingresa tu contraseña" />
+        </div>
+
+        <div class="login-form__options">
+          <label class="checkbox-row">
+            <input
+              type="checkbox"
+              name="rememberEmail"
+              [(ngModel)]="rememberEmail"
+              (change)="onRememberChange()"
+            />
+            <span>Recordarme</span>
+          </label>
+
+          <a routerLink="/forgot-password">Olvidaste tu contrasena?</a>
+        </div>
+
+        <p class="login-error" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </p>
+
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          {{ loading ? 'Ingresando...' : 'Ingresar' }}
+        </button>
+      </form>
+
+      <div class="login-card__footer">
+        <a routerLink="/select-role">Crear cuenta</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,242 @@
+<div class="provider-claims-page">
+  <div class="page-header">
+    <div>
+      <span>Atención postventa</span>
+      <h1>Gestión de Reclamos</h1>
+      <p>Revisa reclamos creados por clientes y registra la resolución del proveedor.</p>
+    </div>
+  </div>
+
+  <div class="claims-grid">
+    <aside class="claims-card">
+      <div class="list-header">
+        <h2>Reclamos recibidos</h2>
+        <span>{{ filteredClaims.length }} reclamos</span>
+      </div>
+
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Buscar por reclamo, orden, cliente o estado..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarReclamos()"
+      />
+
+      <div class="claim-list">
+        <button
+          class="claim-item"
+          *ngFor="let claim of filteredClaims"
+          [class.active]="selectedClaim?.idReclamo === claim.idReclamo"
+          (click)="seleccionarReclamo(claim)">
+          <div>
+            <strong>{{ getClaimCode(claim) }}</strong>
+            <p>{{ getTipoLabel(claim.tipo) }}</p>
+            <small>{{ claim.nombreEmpresa || claim.nombreCliente || 'Cliente' }}</small>
+          </div>
+
+          <div class="claim-meta">
+            <span>{{ getFecha(claim.fechaCreacion) }} a las {{ getHora(claim.fechaCreacion) }}</span>
+            <em [ngClass]="getEstadoClass(claim.estado)">{{ claim.estado }}</em>
+          </div>
+        </button>
+
+        <div class="empty-state" *ngIf="!cargando && filteredClaims.length === 0">
+          No se encontraron reclamos.
+        </div>
+
+        <div class="empty-state" *ngIf="cargando">
+          Cargando reclamos...
+        </div>
+      </div>
+    </aside>
+
+    <section class="claim-detail-card" *ngIf="selectedClaim as claim; else emptyDetail">
+      <div class="detail-header">
+        <div>
+          <span class="status-pill" [ngClass]="getEstadoClass(claim.estado)">{{ claim.estado }}</span>
+          <h2>{{ getClaimCode(claim) }}</h2>
+          <p>Solicitud {{ getOrderCode(claim) }} - {{ claim.estadoSolicitud || 'EN_RECLAMO' }}</p>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="claim-info">
+          <h3>Detalle del reclamo</h3>
+
+          <div class="info-grid">
+            <div>
+              <span>Tipo</span>
+              <strong>{{ getTipoLabel(claim.tipo) }}</strong>
+            </div>
+
+            <div>
+              <span>Cliente</span>
+              <strong>{{ claim.nombreCliente || 'Cliente' }}</strong>
+              <small>{{ claim.correoCliente }}</small>
+            </div>
+
+            <div>
+              <span>Empresa</span>
+              <strong>{{ claim.nombreEmpresa || 'No registrada' }}</strong>
+            </div>
+
+            <div>
+              <span>Total solicitud</span>
+              <strong>{{ claim.totalSolicitud ? ('S/ ' + claim.totalSolicitud) : 'Sin total' }}</strong>
+            </div>
+
+            <div class="full">
+              <span>Descripción</span>
+              <strong>{{ claim.descripcion }}</strong>
+            </div>
+
+            <div class="full" *ngIf="claim.direccionEnvio">
+              <span>Dirección de entrega</span>
+              <strong>{{ claim.direccionEnvio }}</strong>
+            </div>
+
+            <div class="full" *ngIf="claim.resolucion">
+              <span>Resolución registrada</span>
+              <strong>{{ claim.resolucion }}</strong>
+              <small *ngIf="claim.fechaResolucion">{{ getFecha(claim.fechaResolucion) }} a las {{ getHora(claim.fechaResolucion) }}</small>
+            </div>
+          </div>
+
+        </div>
+
+        <aside class="claim-progress-card">
+          <section class="evidence-card">
+            <h3>Evidencia adjunta</h3>
+
+            <div class="evidence-preview">
+              <img
+                *ngIf="getEvidenceType(getEvidenceUrl(claim)) === 'image'"
+                [src]="getEvidenceUrl(claim)"
+                alt="Evidencia del reclamo"
+                class="evidence-image"
+                [style.transform]="'scale(' + evidenceZoom + ')'"
+              />
+
+              <iframe
+                *ngIf="getEvidenceType(getEvidenceUrl(claim)) === 'pdf'"
+                [src]="getEvidenceUrl(claim)"
+                title="Evidencia del reclamo"
+                class="evidence-iframe"
+                [style.transform]="'scale(' + evidenceZoom + ')'"
+              ></iframe>
+
+              <div class="evidence-empty" *ngIf="!getEvidenceUrl(claim)">
+                Evidencia no disponible
+              </div>
+
+              <div class="evidence-empty" *ngIf="getEvidenceType(getEvidenceUrl(claim)) === 'other' && getEvidenceUrl(claim)">
+                El archivo adjunto no es una imagen ni un PDF. Puedes descargarlo directamente.
+              </div>
+            </div>
+
+            <div class="evidence-actions">
+              <button
+                type="button"
+                class="btn-secondary"
+                (click)="zoomInEvidence()"
+                [disabled]="evidenceZoom >= maxEvidenceZoom || !getEvidenceUrl(claim)">
+                Zoom +
+              </button>
+
+              <button
+                type="button"
+                class="btn-secondary"
+                (click)="zoomOutEvidence()"
+                [disabled]="evidenceZoom <= minEvidenceZoom || !getEvidenceUrl(claim)">
+                Zoom -
+              </button>
+
+              <button
+                type="button"
+                class="btn-secondary"
+                (click)="downloadEvidence(claim)"
+                [disabled]="!getEvidenceUrl(claim)">
+                Descargar
+              </button>
+            </div>
+          </section>
+
+          <h3>Historial</h3>
+
+          <div class="timeline" *ngIf="claim.historial.length; else noHistory">
+            <div class="timeline-item done" *ngFor="let item of claim.historial">
+              <div class="marker">
+                <span>OK</span>
+              </div>
+
+              <div>
+                <strong>{{ item.estado }}</strong>
+                <p>{{ item.descripcion }}</p>
+                <small>{{ item.fecha | date:'short' }}</small>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noHistory>
+            <div class="empty-state compact">Sin historial registrado.</div>
+          </ng-template>
+
+          <div class="update-box" *ngIf="getEstadosDisponibles().length > 0">
+            <h3>Actualizar estado</h3>
+
+            <label for="nuevoEstado">Nuevo estado</label>
+            <select id="nuevoEstado" [(ngModel)]="estadoSeleccionado" (ngModelChange)="onEstadoSeleccionadoCambio()">
+              <option value="">Seleccione...</option>
+              <option *ngFor="let estado of getEstadosDisponibles(); trackBy: trackOptionValue" [value]="estado.value">
+                {{ estado.label }}
+              </option>
+            </select>
+
+            <ng-container *ngIf="estadoSeleccionado === 'RESUELTO' || estadoSeleccionado === 'RECHAZADO'">
+              <label for="accionSolicitud">
+                Acción para la solicitud
+              </label>
+              <select
+                id="accionSolicitud"
+                [(ngModel)]="accionSolicitud">
+                <option *ngFor="let accion of getAccionesDisponibles(); trackBy: trackOptionValue" [value]="accion.value">
+                  {{ accion.label }}
+                </option>
+              </select>
+
+              <label for="codigoEntrega" *ngIf="debeSolicitarCodigoEntrega()">Código de entrega</label>
+              <input
+                id="codigoEntrega"
+                *ngIf="debeSolicitarCodigoEntrega()"
+                [(ngModel)]="codigoEntrega"
+                type="text"
+                placeholder="Ej. NP-482913"
+                aria-label="Código de entrega"
+              />
+            </ng-container>
+
+            <label for="resolucion">Resolución</label>
+            <textarea
+              id="resolucion"
+              [(ngModel)]="resolucion"
+              rows="4"
+              placeholder="Describe la revisión, solución o motivo de rechazo">
+            </textarea>
+
+            <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+            <button type="button" (click)="actualizarEstado()" [disabled]="guardando">
+              {{ guardando ? 'Actualizando...' : 'Actualizar reclamo' }}
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <ng-template #emptyDetail>
+      <section class="claim-detail-card empty-detail">
+        <div class="empty-state">Selecciona un reclamo para ver su detalle.</div>
+      </section>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+<div class="admin-settings-page">
+  <div class="page-header">
+    <div>
+      <span>Sistema</span>
+      <h1>Configuracion General</h1>
+      <p>Administra parametros globales conectados al backend.</p>
+    </div>
+  </div>
+
+  <section class="settings-card">
+    <div class="settings-list" *ngIf="loading">
+      <div class="config-row config-row--skeleton" *ngFor="let item of skeletonRows">
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-block"></div>
+      </div>
+    </div>
+
+    <div class="settings-list" *ngIf="!loading && configs.length > 0">
+      <article class="config-row" *ngFor="let item of configs">
+        <div class="config-meta">
+          <strong>{{ item.clave }}</strong>
+          <span>{{ item.tipo }}</span>
+        </div>
+
+        <div class="form-group">
+          <label [for]="'config-' + item.id">Valor</label>
+          <input
+            [id]="'config-' + item.id"
+            [(ngModel)]="item.valor"
+            [disabled]="!!item.saving || !!item.testing"
+          />
+        </div>
+
+        <div class="config-actions">
+          <span
+            class="status"
+            [class.status--inactive]="item.estado === 'INACTIVO'">
+            {{ item.estado || 'SIN ESTADO' }}
+          </span>
+
+          <button
+            type="button"
+            class="btn-secondary"
+            *ngIf="item.testeable"
+            (click)="test(item)"
+            [disabled]="!!item.testing">
+            {{ item.testing ? 'Probando...' : 'Probar' }}
+          </button>
+
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="save(item)"
+            [disabled]="!!item.saving || !hasChanges(item)">
+            {{ item.saving ? 'Guardando...' : 'Guardar' }}
+          </button>
+
+          <small *ngIf="item.message">{{ item.message }}</small>
+        </div>
+      </article>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && configs.length === 0">
+      {{ errorMessage || 'No hay configuraciones registradas.' }}
+    </div>
+  </section>
+</div>

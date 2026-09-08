@@ -1,0 +1,103 @@
+<!-- Backend touchpoint: active request list, statuses and tracking actions come from the solicitudes endpoint. -->
+<div class="requests-page">
+
+  <div class="page-header">
+    <div>
+      <span>Gestión post-compra</span>
+      <h1>Mis Solicitudes</h1>
+      <p>Revisa el estado real de tus órdenes y realiza el seguimiento.</p>
+    </div>
+
+    <a routerLink="/app/rfq/catalog" class="btn-primary">Nueva RFQ</a>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <span>Solicitudes totales</span>
+      <strong>{{ summary.activas }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>En preparación</span>
+      <strong>{{ summary.preparacion }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>En camino</span>
+      <strong>{{ summary.camino }}</strong>
+    </div>
+  </div>
+   
+
+  <!-- DEBUG opcional (puedes quitarlo luego) -->
+  <!-- <pre>{{ requests | json }}</pre> -->
+
+  <section class="requests-card">
+
+    <div class="requests-card__header">
+      <h2>Historial Reciente</h2>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div class="requests-skeleton" *ngIf="loading">
+      <div class="skeleton-row" *ngFor="let item of skeletonRows">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-block skeleton-block--button"></div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && requests.length === 0" class="empty-state">
+      No tienes solicitudes registradas.
+    </div>
+
+    <!-- TABLE -->
+    <div class="requests-table" *ngIf="!loading && requests.length > 0">
+
+      <div class="requests-table__head">
+        <div>Código</div>
+        <div>Proveedor</div>
+        <div>Monto Total</div>
+        <div>Fecha Creación</div>
+        <div>Estado</div>
+        <div>Acciones</div>
+      </div>
+
+      <div class="requests-table__row" *ngFor="let request of requests">
+
+        <div class="request-code">{{ request.code }}</div>
+
+        <div>{{ request.provider }}</div>
+
+        <strong>{{ request.amount }}</strong>
+
+        <div>{{ request.date }}</div>
+
+        <div>
+          <span class="status-badge" [ngClass]="request.statusClass">
+            {{ request.status }}
+          </span>
+        </div>
+
+        <div class="actions">
+
+          <a [routerLink]="['/app/requests/tracking', request.id]"
+             class="btn-secondary">
+            Tracking
+          </a>
+
+          <a *ngIf="request.statusClass === 'delivered'"
+             [routerLink]="['/app/requests/evaluation', request.id]"
+             class="btn-primary-small">
+            Evaluar
+          </a>
+
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+</div>

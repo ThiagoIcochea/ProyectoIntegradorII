@@ -1,0 +1,13 @@
+.layout-page {
+	width: min(100%, $container-max);
+	margin: 0 auto;
+}
+
+.layout-grid {
+	display: grid;
+	gap: 1rem;
+}
+
+.layout-grid--auto {
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}

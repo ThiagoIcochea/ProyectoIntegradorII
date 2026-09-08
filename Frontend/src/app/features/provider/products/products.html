@@ -1,0 +1,310 @@
+<div class="provider-products-page">
+  <div class="page-header">
+    <div>
+      <span>Catálogo del proveedor</span>
+      <h1>Productos</h1>
+      <p>Gestiona inventario, descuentos, stock y catálogo con un flujo visual aligned con el SaaS.</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="abrirNuevoProducto()">+ Agregar producto</button>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <span>Productos activos</span>
+      <strong>{{ activos }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Con stock disponible</span>
+      <strong>{{ stockDisponibleCount }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Bajo stock</span>
+      <strong>{{ bajoStockCount }}</strong>
+    </div>
+  </div>
+
+  <section class="products-card">
+    <div class="products-card__header">
+      <div>
+        <h2>Inventario conectado</h2>
+        <p>Actualiza el catálogo del proveedor y sincroniza el estado del inventario.</p>
+      </div>
+
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Buscar por SKU, producto, marca o categoría..."
+        [(ngModel)]="search"
+        (input)="filtrarProductos()"
+      />
+    </div>
+
+    <div class="products-table">
+      <div class="products-table__head">
+        <div>SKU</div>
+        <div>Producto</div>
+        <div>Categoría</div>
+        <div>Stock</div>
+        <div>Precio</div>
+        <div>Descuento</div>
+        <div>Estado</div>
+        <div>Acción</div>
+      </div>
+
+      <ng-container *ngIf="loading">
+        <div class="products-table__row products-table__row--skeleton" *ngFor="let row of skeletonRows">
+          <div class="skeleton-line" *ngFor="let item of [1, 2, 3, 4, 5, 6, 7]"></div>
+        </div>
+      </ng-container>
+
+      <div class="products-table__row" *ngFor="let p of filteredProducts">
+        <div class="sku">{{ p.skuGlobal || '—' }}</div>
+        <div>
+          <strong>{{ p.nombre }}</strong>
+          <div class="row-subtle">{{ p.marca }}</div>
+        </div>
+        <div>{{ p.categoria }}</div>
+        <div>{{ p.stock }}</div>
+        <div>S/ {{ p.precio | number:'1.2-2' }}</div>
+        <div>
+          <span *ngIf="p.porcentajeDescuento > 0">{{ p.porcentajeDescuento }}%</span>
+          <span *ngIf="!p.porcentajeDescuento || p.porcentajeDescuento == 0">-</span>
+        </div>
+        <div>
+          <span class="status" [class.warning]="p.stock < 10">
+            {{ p.stock < 10 ? 'Bajo stock' : 'Activo' }}
+          </span>
+        </div>
+        <div>
+          <button type="button" class="btn-secondary btn-secondary--compact" (click)="abrirGestionProducto(p)">Gestionar</button>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && filteredProducts.length === 0">
+        No se encontraron productos.
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="cerrarNuevoProducto()">
+    <form class="product-modal" (ngSubmit)="crearProducto()" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <span>Catálogo conectado</span>
+          <h2>Agregar producto</h2>
+          <p>El sistema construye un payload de catálogo con la estructura completa y lo sincroniza con MFA.</p>
+        </div>
+        <button type="button" class="btn-secondary" (click)="cerrarNuevoProducto()" aria-label="Cerrar">×</button>
+      </div>
+
+      <div class="product-form">
+        <label class="field-group">
+          <span>Producto *</span>
+          <input name="producto" [(ngModel)]="newProduct.producto" required maxlength="150">
+        </label>
+
+        <label class="field-group">
+          <span>Marca *</span>
+          <select name="marca" [(ngModel)]="newProduct.marca" required>
+            <option value="">Selecciona una marca</option>
+            <option *ngFor="let marca of marcas" [value]="marca.nombre">{{ marca.nombre }}</option>
+          </select>
+        </label>
+
+        <label class="field-group">
+          <span>Categoría *</span>
+          <select name="categoria" [(ngModel)]="newProduct.categoria" required>
+            <option value="">Selecciona una categoría</option>
+            <option *ngFor="let categoria of categorias" [value]="categoria.nombre">{{ categoria.nombre }}</option>
+          </select>
+        </label>
+
+        <label class="field-group">
+          <span>Precio unitario (S/) *</span>
+          <input name="precio" type="number" min="0" step="0.01" [(ngModel)]="newProduct.precioUnitario" required>
+        </label>
+
+        <label class="field-group">
+          <span>Stock *</span>
+          <input name="stock" type="number" min="0" step="1" [(ngModel)]="newProduct.stock" required>
+        </label>
+
+        <label class="field-group">
+          <span>Garantía (meses)</span>
+          <input name="garantia" type="number" min="0" [(ngModel)]="newProduct.garantiaMeses">
+        </label>
+
+        <label class="field-group">
+          <span>Entrega (días)</span>
+          <input name="entrega" type="number" min="0" [(ngModel)]="newProduct.tiempoEntregaDias">
+        </label>
+
+        <label class="field-group">
+          <span>Descuento (%)</span>
+          <input name="descuento" type="number" min="0" max="100" step="0.01" [(ngModel)]="newProduct.porcentajeDescuento">
+        </label>
+
+        <label class="field-group field-group--toggle">
+          <input name="oferta" type="checkbox" [(ngModel)]="newProduct.enOferta">
+          <span>En oferta</span>
+        </label>
+
+        <div class="field-group field-group--full">
+          <div class="section-title">Descuentos por volumen</div>
+          <div class="volume-discount-row" *ngFor="let discount of newProduct.descuentosVolumen; let i = index">
+            <label>
+              <span>Cantidad mínima</span>
+              <input name="cantidadMin{{i}}" type="number" min="1" step="1" [(ngModel)]="discount.cantidadMin">
+            </label>
+            <label>
+              <span>Precio unitario (S/)</span>
+              <input name="precioUnitario{{i}}" type="number" min="0" step="0.01" [(ngModel)]="discount.precioUnitario">
+            </label>
+            <button type="button" class="btn-secondary" (click)="eliminarDescuento(newProduct, i)">Eliminar</button>
+          </div>
+          <button type="button" class="btn-secondary" (click)="agregarDescuento(newProduct)">+ Agregar descuento por volumen</button>
+        </div>
+
+        <div class="field-group field-group--full">
+          <div class="section-title">Especificaciones</div>
+          <div class="volume-discount-row" *ngFor="let spec of newProduct.especificaciones; let i = index">
+            <label>
+              <span>Nombre</span>
+              <input name="specNombre{{i}}" [(ngModel)]="spec.nombre" placeholder="Ej. Material">
+            </label>
+            <label>
+              <span>Valor</span>
+              <input name="specValor{{i}}" [(ngModel)]="spec.valor" placeholder="Ej. Aleación de aluminio">
+            </label>
+            <button type="button" class="btn-secondary" (click)="eliminarEspecificacion(newProduct, i)">Eliminar</button>
+          </div>
+          <button type="button" class="btn-secondary" (click)="agregarEspecificacion(newProduct)">+ Agregar especificación</button>
+        </div>
+
+        <label class="field-group field-group--full">
+          <span>Descripción</span>
+          <textarea name="descripcion" [(ngModel)]="newProduct.descripcion" rows="3" maxlength="500"></textarea>
+        </label>
+      </div>
+
+      <p class="form-error" *ngIf="createError">{{ createError }}</p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarNuevoProducto()">Cancelar</button>
+        <button class="btn-primary" type="submit" [disabled]="saving">{{ saving ? 'Agregando...' : 'Agregar producto' }}</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showManageModal" (click)="cerrarGestionProducto()">
+    <form class="product-modal" (ngSubmit)="guardarProductoGestionado()" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <span>Gestión de producto</span>
+          <h2>Actualizar {{ manageProduct.producto || 'producto' }}</h2>
+          <p>Modifica stock, descuentos, precio y descripción del producto del proveedor.</p>
+        </div>
+        <button type="button" class="btn-secondary" (click)="cerrarGestionProducto()" aria-label="Cerrar">×</button>
+      </div>
+
+      <div class="product-form">
+        <label class="field-group">
+          <span>Producto</span>
+          <input name="manage-producto" [(ngModel)]="manageProduct.producto" required maxlength="150">
+        </label>
+
+        <label class="field-group">
+          <span>Marca</span>
+          <select name="manage-marca" [(ngModel)]="manageProduct.marca" required>
+            <option value="">Selecciona una marca</option>
+            <option *ngFor="let marca of marcas" [value]="marca.nombre">{{ marca.nombre }}</option>
+          </select>
+        </label>
+
+        <label class="field-group">
+          <span>Categoría</span>
+          <select name="manage-categoria" [(ngModel)]="manageProduct.categoria" required>
+            <option value="">Selecciona una categoría</option>
+            <option *ngFor="let categoria of categorias" [value]="categoria.nombre">{{ categoria.nombre }}</option>
+          </select>
+        </label>
+
+        <label class="field-group">
+          <span>Precio unitario (S/)</span>
+          <input name="manage-precio" type="number" min="0" step="0.01" [(ngModel)]="manageProduct.precioUnitario" required>
+        </label>
+
+        <label class="field-group">
+          <span>Stock</span>
+          <input name="manage-stock" type="number" min="0" step="1" [(ngModel)]="manageProduct.stock" required>
+        </label>
+
+        <label class="field-group">
+          <span>Garantía (meses)</span>
+          <input name="manage-garantia" type="number" min="0" [(ngModel)]="manageProduct.garantiaMeses">
+        </label>
+
+        <label class="field-group">
+          <span>Entrega (días)</span>
+          <input name="manage-entrega" type="number" min="0" [(ngModel)]="manageProduct.tiempoEntregaDias">
+        </label>
+
+        <label class="field-group">
+          <span>Descuento (%)</span>
+          <input name="manage-descuento" type="number" min="0" max="100" step="0.01" [(ngModel)]="manageProduct.porcentajeDescuento">
+        </label>
+
+        <label class="field-group field-group--toggle">
+          <input name="manage-oferta" type="checkbox" [(ngModel)]="manageProduct.enOferta">
+          <span>En oferta</span>
+        </label>
+
+        <div class="field-group field-group--full">
+          <div class="section-title">Descuentos por volumen</div>
+          <div class="volume-discount-row" *ngFor="let discount of manageProduct.descuentosVolumen; let i = index">
+            <label>
+              <span>Cantidad mínima</span>
+              <input name="manage-cantidadMin{{i}}" type="number" min="1" step="1" [(ngModel)]="discount.cantidadMin">
+            </label>
+            <label>
+              <span>Precio unitario (S/)</span>
+              <input name="manage-precioUnitario{{i}}" type="number" min="0" step="0.01" [(ngModel)]="discount.precioUnitario">
+            </label>
+            <button type="button" class="btn-secondary" (click)="eliminarDescuento(manageProduct, i)">Eliminar</button>
+          </div>
+          <button type="button" class="btn-secondary" (click)="agregarDescuento(manageProduct)">+ Agregar descuento por volumen</button>
+        </div>
+
+        <div class="field-group field-group--full">
+          <div class="section-title">Especificaciones</div>
+          <div class="volume-discount-row" *ngFor="let spec of manageProduct.especificaciones; let i = index">
+            <label>
+              <span>Nombre</span>
+              <input name="manage-specNombre{{i}}" [(ngModel)]="spec.nombre" placeholder="Ej. Compatibilidad">
+            </label>
+            <label>
+              <span>Valor</span>
+              <input name="manage-specValor{{i}}" [(ngModel)]="spec.valor" placeholder="Ej. Compatible con 220V">
+            </label>
+            <button type="button" class="btn-secondary" (click)="eliminarEspecificacion(manageProduct, i)">Eliminar</button>
+          </div>
+          <button type="button" class="btn-secondary" (click)="agregarEspecificacion(manageProduct)">+ Agregar especificación</button>
+        </div>
+
+        <label class="field-group field-group--full">
+          <span>Descripción</span>
+          <textarea name="manage-descripcion" [(ngModel)]="manageProduct.descripcion" rows="3" maxlength="500"></textarea>
+        </label>
+      </div>
+
+      <p class="form-error" *ngIf="createError">{{ createError }}</p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarGestionProducto()">Cancelar</button>
+        <button class="btn-primary" type="submit" [disabled]="saving">{{ saving ? 'Guardando...' : 'Guardar cambios' }}</button>
+      </div>
+    </form>
+  </div>
+</div>

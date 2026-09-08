@@ -1,0 +1,115 @@
+.swal2-container.integrations-swal-container {
+  position: fixed !important;
+  inset: 0 !important;
+  padding: 1rem;
+  background: rgba(var(--theme-app-rgb), 0.72);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.integrations-swal-popup.swal2-popup {
+  width: min(500px, calc(100vw - 2rem));
+  padding: 1.75rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--theme-surface-raised) 96%, transparent);
+  color: var(--theme-text);
+  box-shadow: 0 28px 80px var(--theme-shadow);
+}
+
+.integrations-swal-title.swal2-title {
+  padding: 0;
+  color: var(--theme-text-bright);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.35rem, 4vw, 1.7rem);
+  line-height: 1.2;
+}
+
+.integrations-swal-description.swal2-html-container {
+  margin: 1.1rem 0 0;
+  padding: 0;
+  color: var(--theme-text-secondary);
+}
+
+.integrations-swal-actions.swal2-actions {
+  width: 100%;
+  margin: 1.35rem 0 0;
+  gap: 0.65rem;
+}
+
+.integrations-swal-confirm,
+.integrations-swal-cancel {
+  min-width: 112px;
+  min-height: 44px;
+  margin: 0 !important;
+  border-radius: 11px !important;
+  padding: 0 1.1rem !important;
+  font: inherit !important;
+  font-weight: 700 !important;
+}
+
+.integrations-swal-confirm {
+  border: 0 !important;
+  background: var(--theme-accent) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22) !important;
+}
+
+.integrations-swal-cancel {
+  border: 1px solid var(--theme-border) !important;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+.config-modal-shell {
+  display: grid;
+  gap: 0.95rem;
+  text-align: left;
+}
+
+.config-modal-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.config-modal-label {
+  color: var(--theme-text);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.config-modal-input {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  border: 1px solid var(--theme-border);
+  border-radius: 12px;
+  outline: none;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  padding: 0 0.9rem;
+  font: inherit;
+}
+
+.config-modal-input:focus {
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.16);
+}
+
+@media (max-width: 520px) {
+  .integrations-swal-popup.swal2-popup {
+    padding: 1.35rem 1rem;
+    border-radius: 16px;
+  }
+
+  .integrations-swal-actions.swal2-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .integrations-swal-confirm,
+  .integrations-swal-cancel {
+    width: 100%;
+  }
+}

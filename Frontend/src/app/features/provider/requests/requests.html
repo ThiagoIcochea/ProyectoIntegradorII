@@ -1,0 +1,141 @@
+<!-- Backend touchpoint: provider RFQ inbox and quotation detail view. -->
+<div class="provider-requests-page">
+  <div class="page-header">
+    <div>
+      <span>RFQ recibidas</span>
+      <h1>Gestion de Solicitudes</h1>
+      <p>Revisa solicitudes de clientes y decide si cotizar o rechazar.</p>
+    </div>
+  </div>
+
+  <div class="requests-grid" [class.detail-view-open]="detailViewOpen">
+    <aside class="inbox-card">
+      <div class="inbox-header">
+        <h2>Bandeja de entrada</h2>
+        <span>{{ filteredRequests.length }} solicitudes</span>
+      </div>
+
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Buscar por ID, cliente o estado..."
+        [(ngModel)]="searchTerm"
+        (input)="filterRequests()"
+      />
+
+      <div class="inbox-list">
+        <button
+          class="inbox-item"
+          *ngFor="let request of filteredRequests"
+          [class.active]="selectedRequest?.idSolicitud === request.idSolicitud"
+          (click)="selectRequest(request)"
+        >
+          <div>
+            <strong>{{ getRfQCode(request) }}</strong>
+            <p>{{ request.nombreEmpresa || request.nombreCliente || 'Sin empresa' }}</p>
+            <small>Numero de productos: {{ request.detalles?.length || 0 }}</small>
+          </div>
+
+          <div class="inbox-meta">
+            <span>{{ getFecha(request.fechaCreacion) }} {{ getHora(request.fechaCreacion) }}</span>
+            <em>{{ request.estado }}</em>
+          </div>
+        </button>
+
+        <div class="empty-state" *ngIf="!loading && filteredRequests.length === 0">
+          {{ errorMessage || 'No se encontraron solicitudes.' }}
+        </div>
+      </div>
+    </aside>
+
+    <section class="request-detail-card">
+      <button type="button" class="responsive-back-button" (click)="showRequestList()">
+        <span aria-hidden="true">&larr;</span>
+        Volver a solicitudes
+      </button>
+
+      <ng-container *ngIf="selectedRequest; else noSelection">
+        <div class="detail-header">
+          <div>
+            <span class="status-pill">{{ selectedRequest.estado }}</span>
+            <h2>Solicitud {{ getRfQCode(selectedRequest) }}</h2>
+            <p>{{ getFechaCompleta(selectedRequest.fechaCreacion) }}</p>
+          </div>
+        </div>
+
+        <div class="client-card">
+          <div class="client-avatar">
+            {{ (selectedRequest.nombreEmpresa || selectedRequest.nombreCliente || 'CL').slice(0, 2) }}
+          </div>
+
+          <div>
+            <h3>{{ selectedRequest.nombreEmpresa || selectedRequest.nombreCliente || 'Cliente sin nombre' }}</h3>
+            <p>{{ selectedRequest.correoCliente }} · +51 {{ selectedRequest.telefonoCliente }}</p>
+            <span>{{ selectedRequest.direccionEnvio || 'Direccion no registrada' }}</span>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <h3>Productos solicitados</h3>
+          <p>Todos los productos son requeridos para poder generar una cotizacion completa.</p>
+        </div>
+
+        <div class="products-table">
+          <div class="products-table__head">
+            <div>Producto</div>
+            <div>Especificaciones tecnicas</div>
+            <div>Cant.</div>
+          </div>
+
+          <div class="products-table__row" *ngFor="let product of productos">
+            <div class="product-cell">
+              <div class="product-thumb"></div>
+
+              <div>
+                <strong>{{ product.nombreProducto }}</strong>
+                <span>{{ product.marca }}</span>
+              </div>
+            </div>
+
+            <div>
+              <ul>
+                <li *ngFor="let spec of product.especificaciones">
+                  {{ spec.nombre }} {{ spec.valor }}
+                </li>
+              </ul>
+            </div>
+
+            <div class="qty">{{ product.cantidad }}</div>
+          </div>
+        </div>
+
+        <div class="workflow-note">
+          La validacion y generacion de cotizacion se ejecutan desde el flujo automatico, por lo que esta vista resume la solicitud.
+        </div>
+
+        <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+        <div class="validation-actions" *ngIf="canProcessSelectedRequest() || isProcessingSelectedRequest()">
+          <button
+            class="btn-danger"
+            (click)="rechazarPedido()"
+            [disabled]="!canProcessSelectedRequest()">
+            {{ processingAction === 'RECHAZAR' ? 'Rechazando...' : 'Rechazar pedido' }}
+          </button>
+          <button
+            class="btn-primary"
+            (click)="aprobarPedido()"
+            [disabled]="!canProcessSelectedRequest()">
+            {{ processingAction === 'APROBAR' ? 'Aprobando...' : 'Aprobar pedido' }}
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #noSelection>
+        <div class="empty-state">
+          Selecciona una solicitud para ver su detalle.
+        </div>
+      </ng-template>
+    </section>
+  </div>
+</div>

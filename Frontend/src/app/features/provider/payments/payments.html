@@ -1,0 +1,288 @@
+<!-- Backend touchpoint: payment validation queue and receipt review flow. -->
+<div class="provider-payments-page">
+  <div class="page-header">
+    <div>
+      <span>Validacion financiera</span>
+      <h1>Validacion de Pagos</h1>
+      <p>Revisa comprobantes enviados por clientes y confirma la operacion.</p>
+    </div>
+  </div>
+
+  <div class="payments-grid">
+    <aside class="payment-list-card">
+      <div class="list-header">
+        <h2>Pendientes de revision</h2>
+        <span>{{ filteredPayments.length }} pagos</span>
+      </div>
+
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Buscar por ID de pago, cliente o estado..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarPagos()"
+      />
+
+      <div class="payment-list" *ngIf="loading">
+        <div class="payment-item payment-item--skeleton" *ngFor="let item of skeletonRows">
+          <div>
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-line--short"></div>
+          </div>
+
+          <div class="payment-meta">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-block skeleton-block--button"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="payment-list" *ngIf="!loading">
+        <button
+          class="payment-item"
+          *ngFor="let payment of filteredPayments"
+          [class.active]="selectedPayment?.idPago === payment.idPago"
+          (click)="seleccionarPago(payment)"
+        >
+          <div>
+            <strong>{{ getPagoCode(payment) }}</strong>
+            <p>{{ payment.nombreEmpresa }}</p>
+            <b>S/ {{ payment.totalSolicitud || 0 }}</b>
+          </div>
+
+          <div class="payment-meta">
+            <span>{{ getFecha(payment.fechaPago) }} {{ getHora(payment.fechaPago) }}</span>
+            <em [class.approved]="payment.estado === 'Aprobado'">
+              {{ payment.estado }}
+            </em>
+          </div>
+        </button>
+
+        <div class="empty-state" *ngIf="filteredPayments.length === 0">
+          {{ errorMessage || 'No hay pagos que coincidan con la busqueda.' }}
+        </div>
+      </div>
+    </aside>
+
+    <section class="payment-detail-card" *ngIf="loading">
+      <div class="detail-header">
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="payment-info">
+          <div class="skeleton-line" *ngFor="let item of [1, 2, 3, 4, 5, 6]"></div>
+        </div>
+
+        <aside class="voucher-card">
+          <div class="skeleton-block skeleton-voucher"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="payment-detail-card" *ngIf="!loading">
+      <div class="detail-header">
+        <div>
+          <span class="status-pill">  {{ selectedPayment?.estado}}        </span>
+          <h2>Pago {{ getPagoCode(selectedPayment) }}   </h2>
+          <p>Asociado a Cotización: {{ getCotCode(selectedPayment)  }}     </p>
+
+<p
+    *ngIf="
+      selectedPayment?.estado === 'APROBADO'
+      && selectedPayment?.fechaValidacion
+    "
+  >
+    Fecha validación:
+    {{
+      getFechaCompleta(
+        selectedPayment?.fechaValidacion
+      )
+    }}
+  </p>
+
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="payment-info">
+          <h3>Detalles del Cliente</h3>
+
+          <div class="info-list">
+            <div>
+              <span>Razon Social</span>
+              <strong>{{ selectedPayment?.nombreEmpresa }}</strong>
+            </div>
+
+            <div>
+              <span>RUC</span>
+              <strong>{{ selectedPayment?.rucEmpresa }}</strong>
+            </div>
+
+            <div>
+              <span>Contacto</span>
+              <strong>{{ selectedPayment?.correoCliente }}</strong>
+            </div>
+          </div>
+
+          <h3>Informacion de Transferencia</h3>
+
+          <div class="info-list">
+            <div>
+              <span>Metodo de pago</span>
+              <strong>{{ selectedPayment?.metodo }}</strong>
+            </div>
+
+            <div>
+              <span>Banco origen</span>
+              <strong>{{ selectedPayment?.entidad }}</strong>
+            </div>
+
+            <div>
+              <span>Fecha operacion</span>
+              <strong>{{ getFechaCompleta(selectedPayment?.fechaPago) }}</strong>
+            </div>
+
+            <div>
+              <span>Codigo operacion</span>
+              <strong>{{ selectedPayment?.codigoOperacion }}</strong>
+            </div>
+          </div>
+
+          <div class="amount-box">
+            <span>Monto a validar</span>
+            <strong>S/ {{ selectedPayment?.totalSolicitud }}</strong>
+          </div>
+
+          <div class="validation-box">
+            <h3>Validacion</h3>
+            <p>Confirma si el monto y codigo de operacion coinciden con tu cuenta bancaria.</p>
+
+            <div class="validation-actions">
+              <button class="btn-danger"  (click)="abrirModal('RECHAZAR')"     >Rechazar pago</button>
+              <button class="btn-primary" (click)="abrirModal('APROBAR')"    >Aprobar pago</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="voucher-card">
+          <h3>Comprobante adjunto</h3>
+
+          <div class="voucher-preview">
+            <img
+              *ngIf="getVoucherType(getVoucherUrl(selectedPayment)) === 'image'"
+              [src]="getVoucherUrl(selectedPayment)"
+              alt="Comprobante de pago"
+              class="voucher-image"
+              [style.transform]="'scale(' + voucherZoom + ')'"
+            />
+
+            <iframe
+              *ngIf="getVoucherType(getVoucherUrl(selectedPayment)) === 'pdf'"
+              [src]="getVoucherUrl(selectedPayment)"
+              title="Comprobante de pago"
+              class="voucher-iframe"
+              [style.transform]="'scale(' + voucherZoom + ')'"
+            ></iframe>
+
+            <div class="voucher-empty" *ngIf="!getVoucherUrl(selectedPayment)">
+              Comprobante no disponible
+            </div>
+
+            <div class="voucher-empty" *ngIf="getVoucherType(getVoucherUrl(selectedPayment)) === 'other' && getVoucherUrl(selectedPayment)">
+              El archivo adjunto no es una imagen ni un PDF. Puedes descargarlo directamente.
+            </div>
+          </div>
+
+          <div class="voucher-actions">
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="zoomInVoucher()"
+              [disabled]="voucherZoom >= maxVoucherZoom || !getVoucherUrl(selectedPayment)">
+              Zoom +
+            </button>
+
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="zoomOutVoucher()"
+              [disabled]="voucherZoom <= minVoucherZoom || !getVoucherUrl(selectedPayment)">
+              Zoom -
+            </button>
+
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="downloadVoucher(selectedPayment)"
+              [disabled]="!getVoucherUrl(selectedPayment)">
+              Descargar
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+</div>
+
+
+
+
+<div class="modal" *ngIf="mostrarModal">
+
+  <div
+    class="modal-content"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="provider-payment-modal-title">
+
+    <h3 id="provider-payment-modal-title">
+      {{ accionModal === 'APROBAR'
+          ? 'Confirmar aprobación'
+          : 'Confirmar rechazo' }}
+    </h3>
+
+    <p>
+      ¿Estás seguro de que deseas
+      {{ accionModal === 'APROBAR'
+          ? 'aprobar'
+          : 'rechazar' }}
+      este pago?
+    </p>
+
+    <div class="modal-actions">
+
+      <button type="button" class="btn-primary"
+              (click)="confirmarAccion()">
+        Sí, confirmar
+      </button>
+
+      <button type="button" class="btn-secondary"
+              (click)="cerrarModal()">
+        Cancelar
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

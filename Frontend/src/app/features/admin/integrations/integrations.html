@@ -1,0 +1,115 @@
+<div class="admin-integrations-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <span>
+        Integraciones
+      </span>
+
+      <h1>
+        API & Conectores
+      </h1>
+
+      <p>
+        Gestiona servicios conectados al sistema.
+      </p>
+
+    </div>
+
+    <button class="btn-primary" (click)="crearConfiguracion()">
+      + Nueva variable
+    </button>
+
+  </div>
+
+  <div class="integration-grid">
+    <ng-container *ngIf="loading">
+      <div
+        class="integration-card integration-card--skeleton"
+        *ngFor="let item of skeletonCards">
+
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-block skeleton-block--button"></div>
+
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading">
+      <div
+        class="integration-card"
+        *ngFor="let item of integrations">
+
+      <div class="integration-header">
+
+        <h2>
+          {{ item.clave }}
+        </h2>
+
+        <span
+          class="status"
+          [class.error]="item.estado === 'INACTIVO'">
+
+          {{ item.estado }}
+
+        </span>
+
+      </div>
+
+      <p>
+        Valor actual:
+        {{ item.valor }}
+      </p>
+
+      <small>
+        #{{ item.id }}
+      </small>
+
+      <small>
+        Tipo:
+        {{ item.tipo }}
+      </small>
+
+      <div class="actions">
+
+        <button
+          class="btn-secondary"
+          *ngIf="item.testeable"
+          (click)="probarConexion(item)">
+
+          Probar conexión
+
+        </button>
+
+        <button
+          class="btn-primary"
+          (click)="configurar(item)">
+
+          Configurar
+
+        </button>
+
+        <button
+          class="btn-secondary"
+          (click)="eliminarConfiguracion(item)">
+
+          Eliminar
+
+        </button>
+
+      </div>
+
+      </div>
+    </ng-container>
+
+    <div class="empty-state" *ngIf="!loading && integrations.length === 0">
+      No hay integraciones configuradas.
+    </div>
+
+  </div>
+
+</div>
+

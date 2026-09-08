@@ -1,0 +1,62 @@
+<!-- Backend touchpoint: admin dashboard summarizes metrics and recent activity. -->
+<div class="admin-dashboard">
+  <div class="page-header">
+    <div>
+      <span>Panel de control</span>
+      <h1>Dashboard Principal</h1>
+      <p>Monitorea usuarios, proveedores, RFQs e integraciones del sistema.</p>
+    </div>
+    <button type="button" class="btn-secondary" (click)="exportarDashboard()">Exportar dashboard</button>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card" *ngFor="let metric of metrics">
+      <span>{{ metric.title }}</span>
+      <strong>{{ metric.value }}</strong>
+      <p [ngClass]="metric.type">{{ metric.change }}</p>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <section class="chart-card">
+      <div class="card-header">
+        <h2>Solicitudes de Equipamiento de Red RFQ</h2>
+        <a routerLink="/app/admin/rfqs">Ver reporte completo</a>
+      </div>
+
+      <div class="bar-chart">
+        <div
+          class="bar-item"
+          *ngFor="let bar of chartBars"
+          [class.active]="bar.active">
+          <div [style.height.%]="bar.height"></div>
+          <span>{{ bar.label }}</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="activity-card">
+      <div class="card-header">
+        <h2>Actividad reciente</h2>
+        <a routerLink="/app/admin/logs">Ver logs</a>
+      </div>
+
+      <div class="activity-list">
+        <div class="activity-item" *ngFor="let item of activity">
+          <div class="activity-dot"></div>
+
+          <div>
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.detail }}</p>
+          </div>
+
+          <span>{{ item.status }}</span>
+        </div>
+
+        <div class="empty-state" *ngIf="activity.length === 0">
+          No hay actividad reciente disponible.
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

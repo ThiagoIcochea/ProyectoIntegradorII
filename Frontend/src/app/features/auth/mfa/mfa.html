@@ -1,0 +1,80 @@
+<div class="mfa-page">
+  <div class="mfa-page__left">
+    <div class="brand-block">
+      <div class="brand-badge">Nethink</div>
+      <h1>Seguridad multifactor para operaciones B2B</h1>
+      <p>
+        Protegemos el acceso, registros y cambios sensibles sin interrumpir el flujo de compra,
+        proveedor o administracion.
+      </p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>Codigo temporal con expiracion automatica</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>Validacion por correo para registros</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span>Proteccion para perfil, API y acciones administrativas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mfa-page__right">
+  <section class="mfa-card">
+    <button type="button" class="mfa-back" routerLink="/login">← Volver</button>
+
+    <div class="mfa-icon" aria-hidden="true">MFA</div>
+    <h1>Verificacion multifactor</h1>
+    <p>Confirma el codigo enviado a {{ flow?.email }}.</p>
+
+    <div class="mfa-methods" *ngIf="!flow?.emailOnly">
+      <button type="button" [class.active]="method === 'email'" (click)="method = 'email'">Correo</button>
+      <button type="button" [class.active]="method === 'sms'" (click)="method = 'sms'">SMS</button>
+      <button type="button" [class.active]="method === 'whatsapp'" (click)="method = 'whatsapp'">WhatsApp</button>
+      <button type="button" [class.active]="method === 'call'" (click)="method = 'call'">Llamada</button>
+    </div>
+
+    <div class="mfa-email-only" *ngIf="flow?.emailOnly">
+      Registro protegido por correo electronico.
+    </div>
+
+    <form (ngSubmit)="verify()">
+      <div class="mfa-digits" role="group" aria-label="Codigo MFA de 6 digitos">
+        <input
+          *ngFor="let digit of digitSlots; let i = index"
+          [id]="'mfa-digit-' + i"
+          [name]="'mfaDigit' + i"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="1"
+          [value]="getDigit(i)"
+          (input)="updateDigit($event, i)"
+          (keydown)="handleDigitKeydown($event, i)"
+          (paste)="pasteCode($event, i)"
+          aria-label="Digito {{ i + 1 }}"
+        />
+      </div>
+
+      <p class="mfa-countdown">
+        El codigo expira en {{ expiresSeconds }}s.
+      </p>
+
+      <p class="mfa-error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+      <button type="submit" class="mfa-submit" [disabled]="loading">
+        {{ loading ? 'Verificando...' : 'Verificar' }}
+      </button>
+    </form>
+
+    <button type="button" class="mfa-resend" (click)="resend()" [disabled]="resendSeconds > 0">
+      {{ resendSeconds > 0 ? ('Reenviar en ' + resendSeconds + 's') : 'Reenviar codigo' }}
+    </button>
+  </section>
+  </div>
+</div>

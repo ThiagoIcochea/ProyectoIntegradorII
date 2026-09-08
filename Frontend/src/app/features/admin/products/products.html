@@ -1,0 +1,300 @@
+<div class="admin-products-page">
+
+  <div class="page-header">
+    <div>
+      <span>Catálogo global</span>
+
+      <h1>Productos del sistema</h1>
+
+      <p>
+        Supervisa productos disponibles, proveedores asociados y niveles de stock
+        sincronizados por API.
+      </p>
+    </div>
+  </div>
+
+  <div class="products-grid" [class.detail-view-open]="detailViewOpen">
+
+    <section class="products-card">
+
+      <div class="card-header">
+
+        <h2>Productos registrados</h2>
+
+        <input
+          type="text"
+          class="search-box"
+          placeholder="Buscar por producto, marca o categoría..."
+          [(ngModel)]="searchText"
+          (input)="filtrarProductos()"
+        />
+
+      </div>
+
+      <div class="products-table">
+
+        <div class="products-table__head">
+          <div>Producto</div>
+          <div>Marca</div>
+          <div>Categoría</div>
+          <div>Proveedores</div>
+          <div>Stock total</div>
+          <div>Estado</div>
+        </div>
+
+        <div class="products-table__row products-table__row--skeleton" *ngIf="loading">
+          <div class="skeleton-line" *ngFor="let item of [1, 2, 3, 4, 5, 6]"></div>
+        </div>
+
+        <ng-container *ngIf="!loading">
+          <div
+            class="products-table__row"
+            *ngFor="let product of filteredProducts"
+            [class.active]="selectedProduct?.idProducto === product.idProducto"
+            (click)="seleccionarProducto(product)"
+            (keydown.enter)="seleccionarProducto(product)"
+            role="button"
+            tabindex="0"
+          >
+            <div class="product-name" data-label="Producto">
+              {{ product.name }}
+            </div>
+
+            <div data-label="Marca">{{ product.brand }}</div>
+            <div data-label="Categoria">{{ product.category }}</div>
+            <div data-label="Proveedores">{{ product.providersCount }}</div>
+            <div data-label="Stock total">{{ product.totalStock }} und.</div>
+
+            <div data-label="Estado">
+              <span
+                class="status"
+                [class.warning]="product.status === 'Stock medio'"
+                [class.danger]="product.status === 'Bajo stock'"
+              >
+                {{ product.status }}
+              </span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+    </section>
+
+    <aside class="detail-card">
+      <button type="button" class="responsive-back-button" (click)="showProductList()">
+        <span aria-hidden="true">&larr;</span>
+        Volver al catalogo
+      </button>
+
+      <div class="detail-header">
+
+        <span>Producto seleccionado</span>
+
+        <h2>{{ selectedProduct?.name }}</h2>
+
+        <p>
+          {{ selectedProduct?.brand }} · {{ selectedProduct?.category }}
+        </p>
+
+      </div>
+
+      <div class="detail-summary">
+
+        <div>
+          <span>Proveedores</span>
+          <strong>{{ selectedProduct?.providersCount }}</strong>
+        </div>
+
+        <div>
+          <span>Stock total</span>
+          <strong>{{ selectedProduct?.totalStock }}</strong>
+        </div>
+
+      </div>
+
+      <h3>Información</h3>
+
+      <div class="provider-list">
+
+        <div class="provider-item">
+
+          <div>
+            <strong>Estado del producto</strong>
+            <span>{{ selectedProduct?.status }}</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="detail-actions">
+
+        <button class="btn-secondary" (click)="openManageModal()">
+          Gestionar producto
+        </button>
+
+      </div>
+
+      <div class="info-box">
+        El stock mostrado proviene de la sincronización API.
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" *ngIf="showManageModal">
+
+    <div
+      class="product-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-product-modal-title">
+
+      <div class="modal-header">
+
+        <div>
+          <span>Configuración</span>
+          <h2 id="admin-product-modal-title">{{ selectedProduct?.name || 'Gestionar producto' }}</h2>
+        </div>
+
+        <button type="button" class="btn-secondary" (click)="closeManageModal()" aria-label="Cerrar modal">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <!-- IZQUIERDA -->
+        <div class="gallery-section">
+
+    <div class="main-image">
+        <img [src]="selectedImage" *ngIf="selectedImage">
+    </div>
+
+    <div class="gallery">
+
+        <div
+            class="gallery-item"
+            *ngFor="let image of productImages; let i = index"
+            (click)="selectImage(image.url)"
+        >
+
+          <button
+        class="delete-image"
+        (click)="removeImage(i); $event.stopPropagation()">
+        ✕
+    </button>
+
+            <img [src]="image.url">
+
+            <span
+                class="principal-badge"
+                *ngIf="i==0">
+
+                Principal
+
+            </span>
+
+            <div class="gallery-actions">
+
+               
+
+              
+
+                 <button
+                    *ngIf="i>0"
+                    (click)="moveLeft(i); $event.stopPropagation()">
+
+                    ◀
+
+                </button>
+
+                  <button
+                    *ngIf="i<productImages.length-1"
+                    (click)="moveRight(i); $event.stopPropagation()">
+
+                    ▶
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- BOTON AGREGAR -->
+
+        <label class="gallery-upload">
+
+            <span>+</span>
+
+            <input
+                type="file"
+                accept="image/*"
+                hidden
+                (change)="onFileSelected($event)">
+
+        </label>
+
+    </div>
+
+</div>
+        <!-- DERECHA -->
+        <div class="config-section">
+
+          <h3>Información general</h3>
+
+          <label>Nombre</label>
+          <input [(ngModel)]="selectedProduct.name">
+
+          <label>Marca</label>
+           <select [(ngModel)]="selectedProduct.brand">
+            <option
+    *ngFor="let marca of selectedProduct.marcas"
+    [value]="marca.nombre">
+
+    {{ marca.nombre }}
+
+  </option>
+
+          </select>
+
+          <label>Categoría</label>
+          <select [(ngModel)]="selectedProduct.category">
+            <option
+    *ngFor="let categoria of selectedProduct.categorias"
+    [value]="categoria.nombre">
+
+    {{ categoria.nombre }}
+
+  </option>
+
+          </select>
+          <label>Estado</label>
+          <select [(ngModel)]="estadoSeleccionado">
+            <option>Activo</option>
+
+            <option>Inactivo</option>
+          </select>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button class="btn-secondary" (click)="closeManageModal()">
+          Cancelar
+        </button>
+
+       <button class="btn-secondary" (click)="guardarCambios()">
+  Guardar cambios
+</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

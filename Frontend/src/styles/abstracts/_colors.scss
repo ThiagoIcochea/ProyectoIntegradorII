@@ -1,0 +1,23 @@
+$bg-app: var(--theme-app);
+$bg-surface: var(--theme-surface);
+$bg-card: var(--theme-surface-raised);
+$bg-elevated: var(--theme-surface-hover);
+
+$primary: #4f8cff;
+$primary-light: var(--theme-accent);
+$primary-dark: #2563eb;
+
+$text-primary: var(--theme-text);
+$text-secondary: var(--theme-text-secondary);
+$text-muted: var(--theme-text-muted);
+
+$border: var(--theme-border);
+
+$success: #22c55e;
+$warning: #f59e0b;
+$danger: #f43f5e;
+$info: #38bdf8;
+
+$surface-strong: var(--theme-surface-soft);
+$surface-soft: var(--theme-glass);
+$overlay: rgba(2, 6, 23, 0.7);

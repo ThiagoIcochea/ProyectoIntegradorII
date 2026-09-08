@@ -1,0 +1,45 @@
+<div class="admin-security-page">
+  <div class="page-header">
+    <div>
+      <span>Control de acceso</span>
+      <h1>Seguridad</h1>
+      <p>Gestiona bloqueos automáticos por intentos fallidos y actividad sospechosa.</p>
+    </div>
+  </div>
+
+  <div class="security-grid">
+    <section class="security-card">
+      <div class="card-header">
+        <div><h2>Usuarios bloqueados</h2><p>5 intentos erróneos bloquean la cuenta.</p></div>
+        <button class="btn-secondary" (click)="bloquearManual('USUARIO')" [disabled]="actionLoading === 'manual-USUARIO'">Bloquear usuario</button>
+      </div>
+      <div class="security-table" *ngIf="!loading && usuarios.length; else emptyUsers">
+        <div class="security-table__head user-row"><div>Usuario</div><div>Intentos</div><div>Bloqueado</div><div></div></div>
+        <div class="security-table__row user-row" *ngFor="let item of usuarios">
+          <div><strong>{{ item.nombreUsuario || item.correoUsuario || item.identificador }}</strong><small>{{ item.correoUsuario || item.identificador }}</small></div>
+          <div><span class="status danger">{{ item.intentosFallidos }}</span></div>
+          <div>{{ formatoFecha(item.fechaBloqueo) }}</div>
+          <button class="btn-primary" (click)="desbloquear('USUARIO', item)" [disabled]="actionLoading === 'USUARIO-' + item.identificador">Desbloquear</button>
+        </div>
+      </div>
+      <ng-template #emptyUsers><div class="empty-state">{{ loading ? 'Cargando bloqueos...' : 'No hay usuarios bloqueados.' }}</div></ng-template>
+    </section>
+
+    <section class="security-card">
+      <div class="card-header">
+        <div><h2>IPs bloqueadas</h2><p>12 fallos desde una IP se consideran actividad sospechosa.</p></div>
+        <button class="btn-secondary" (click)="bloquearManual('IP')" [disabled]="actionLoading === 'manual-IP'">Bloquear IP</button>
+      </div>
+      <div class="security-table" *ngIf="!loading && ips.length; else emptyIps">
+        <div class="security-table__head ip-row"><div>Dirección IP</div><div>Motivo</div><div>Bloqueada</div><div></div></div>
+        <div class="security-table__row ip-row" *ngFor="let item of ips">
+          <div><strong>{{ item.identificador }}</strong><small>{{ item.intentosFallidos }} intentos fallidos</small></div>
+          <div>{{ item.motivo }}</div>
+          <div>{{ formatoFecha(item.fechaBloqueo) }}</div>
+          <button class="btn-primary" (click)="desbloquear('IP', item)" [disabled]="actionLoading === 'IP-' + item.identificador">Desbloquear</button>
+        </div>
+      </div>
+      <ng-template #emptyIps><div class="empty-state">{{ loading ? 'Cargando bloqueos...' : 'No hay IPs bloqueadas.' }}</div></ng-template>
+    </section>
+  </div>
+</div>

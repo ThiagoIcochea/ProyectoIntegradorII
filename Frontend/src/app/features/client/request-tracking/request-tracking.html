@@ -1,0 +1,252 @@
+<!-- Backend touchpoint: tracking timeline and order summary are driven by the tracking endpoint. -->
+<div class="tracking-page">
+
+  <div *ngIf="loading" class="loading-box">
+    Cargando tracking...
+  </div>
+
+  <section *ngIf="!loading && errorMessage" class="tracking-error">
+    <div>
+      <span>No se pudo mostrar el tracking</span>
+      <h2>{{ errorMessage }}</h2>
+      <p>El frontend esta funcionando, pero el backend rechazo la solicitud de tracking para este ID.</p>
+    </div>
+
+    <a routerLink="/app/requests" class="btn-secondary">
+      Volver a solicitudes
+    </a>
+  </section>
+
+  <div *ngIf="!loading && tracking">
+
+    <div class="page-title">
+
+      <a routerLink="/app/requests" class="back-button">←</a>
+
+      <div>
+        <span>Solicitud activa</span>
+
+        <h1>Tracking de Solicitud</h1>
+
+        <p>
+          RFQ-2026-{{ tracking.idSolicitud }}
+          · {{ tracking.proveedor }}
+        </p>
+      </div>
+
+    </div>
+
+    <div class="tracking-grid">
+
+      <section class="tracking-card">
+
+        <div class="card-header">
+          <h2>Estado del pedido</h2>
+        </div>
+
+        <div class="timeline">
+
+          <div class="timeline-item"
+               *ngFor="let step of steps"
+               [ngClass]="step.status">
+
+            <div class="timeline-marker">
+              <span *ngIf="step.status === 'done'">✓</span>
+              <span *ngIf="step.status === 'active'">•</span>
+            </div>
+
+            <div class="timeline-content">
+              <h3>{{ step.title }}</h3>
+              <p>{{ step.description }}</p>
+              <small>{{ step.date }}</small>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <aside class="order-summary">
+
+        <div class="status-pill">
+          {{ getEstadoTexto() }}
+        </div>
+
+        <h2>Resumen</h2>
+
+        <div class="summary-list">
+
+          <div>
+            <span>Proveedor</span>
+            <strong>{{ tracking.proveedor }}</strong>
+          </div>
+
+          <div>
+            <span>Monto</span>
+            <strong>S/ {{ tracking.total }}</strong>
+          </div>
+
+          <div class="company-block">
+            <span>Empresa</span>
+            <strong>
+              {{ tracking.empresaCompradora?.razonSocial || 'Sin nombre' }}
+            </strong>
+
+            <span>RUC</span>
+            <strong>
+              {{ tracking.empresaCompradora?.ruc || 'Sin RUC' }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Entrega</span>
+            <strong>
+              {{ tracking.fechaEntrega ? (tracking.fechaEntrega | date:'dd/MM/yyyy') : 'Pendiente' }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Fecha prometida</span>
+            <strong>
+              {{ getPromisedDate() ? (getPromisedDate() | date:'dd/MM/yyyy') : 'No registrada' }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Dirección</span>
+            <strong>{{ tracking.direccion }}</strong>
+          </div>
+
+          <div *ngIf="esEnCamino()">
+            <span>Código de recepción</span>
+            <strong>
+              {{ tracking.codigoRecepcion || 'Pendiente de generar' }}
+            </strong>
+          </div>
+
+        </div>
+
+        <div class="delivery-code-card" *ngIf="esEnCamino()">
+          <span>Código de recepción</span>
+          <strong>{{ tracking.codigoRecepcion || 'Pendiente' }}</strong>
+          <p>Usa este código para verificar la entrega una vez que el pedido llegue a destino.</p>
+        </div>
+
+        <div class="delay-claim-card" *ngIf="currentClaim; else delayClaimAction">
+          <span>Reclamo enviado al proveedor</span>
+          <strong>{{ currentClaim.estado }}</strong>
+          <p>{{ currentClaim.descripcion }}</p>
+          <small>
+            Fecha prometida: {{ formatClaimDate(currentClaim.fechaPrometida) }}
+            - Demora: {{ currentClaim.diasDemora }} dia{{ currentClaim.diasDemora === 1 ? '' : 's' }}
+          </small>
+        </div>
+
+        <ng-template #delayClaimAction>
+          <div class="delay-claim-card delay-claim-card--warning" *ngIf="canCreateDelayClaim()">
+            <span>Accion postventa</span>
+            <strong>Solicitud de reclamo</strong>
+            <p>{{ getDelayClaimHint() }}</p>
+            <button type="button" class="btn-delay-claim" (click)="abrirReclamoDemora()">
+              Generar reclamo
+            </button>
+          </div>
+        </ng-template>
+
+        <div class="actions-box" >
+
+          <button class="btn-primary"
+                  type="button"
+                  (click)="irAPago()" *ngIf="esPedidoAprobado()">
+            Pagar ahora
+          </button>
+
+          <button class="btn-danger"
+                  (click)="cancelarSolicitud()" *ngIf="esPosibleCancelar()">
+            Cancelar solicitud
+          </button>
+
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="claim-modal-backdrop" *ngIf="claimModalOpen" (click)="cerrarReclamoDemora()"></div>
+
+<section class="claim-modal" *ngIf="claimModalOpen" role="dialog" aria-modal="true" aria-labelledby="claim-modal-title">
+  <header class="claim-modal__header">
+    <div>
+      <span>Solicitud al proveedor</span>
+      <h2 id="claim-modal-title">Reclamo por demora</h2>
+    </div>
+
+    <button type="button" (click)="cerrarReclamoDemora()" [disabled]="claimSubmitting" aria-label="Cerrar reclamo">x</button>
+  </header>
+
+  <div class="claim-modal__summary">
+    <div>
+      <span>Solicitud</span>
+      <strong>{{ getRequestCode() }}</strong>
+    </div>
+
+    <div>
+      <span>Proveedor</span>
+      <strong>{{ tracking?.proveedor || 'Proveedor' }}</strong>
+    </div>
+
+    <div>
+      <span>Tipo</span>
+      <strong>{{ claimType === 'DEMORA' ? 'Demora' : claimType === 'CANCELACION' ? 'Cancelación' : 'Entrega incompleta' }}</strong>
+    </div>
+  </div>
+
+  <form class="claim-form" (ngSubmit)="guardarReclamoDemora()">
+    <label>
+      Tipo de reclamo
+      <select name="claimType" [(ngModel)]="claimType" [disabled]="claimSubmitting">
+        <option *ngFor="let option of availableClaimTypes" [value]="option">
+          {{ option === 'DEMORA' ? 'Demora' : option === 'CANCELACION' ? 'Cancelación' : 'Entrega incompleta' }}
+        </option>
+      </select>
+    </label>
+
+    <label *ngIf="claimType === 'DEMORA'">
+      Fecha prometida por el proveedor
+      <input type="date" name="claimPromisedDate" [(ngModel)]="claimPromisedDate" [disabled]="claimSubmitting" required>
+    </label>
+
+    <label>
+      Detalle del reclamo
+      <textarea
+        name="claimDescription"
+        [(ngModel)]="claimDescription"
+        rows="5"
+        maxlength="600"
+        [disabled]="claimSubmitting"
+        required>
+      </textarea>
+    </label>
+
+    <label>
+      Evidencia (imagen o PDF)
+      <input type="file" accept=".pdf,image/*" (change)="onEvidenceSelected($event)" [disabled]="claimSubmitting">
+    </label>
+
+    <small *ngIf="selectedEvidence">{{ selectedEvidence.name }}</small>
+
+    <p class="claim-error" *ngIf="claimError">{{ claimError }}</p>
+
+    <div class="claim-actions">
+      <button type="button" class="btn-secondary" (click)="cerrarReclamoDemora()" [disabled]="claimSubmitting">Cancelar</button>
+      <button type="submit" class="btn-primary" [disabled]="claimSubmitting">
+        {{ claimSubmitting ? 'Enviando reclamo...' : 'Enviar solicitud de reclamo' }}
+      </button>
+    </div>
+  </form>
+</section>

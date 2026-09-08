@@ -1,0 +1,9 @@
+// Paleta exacta de Frontend/src/styles/abstracts/_colors.scss y _theme.scss.
+export const darkColors = { primary:'#4f8cff', primaryDark:'#2563eb', primaryLight:'#60a5fa', accent:'#60a5fa', accentSoft:'#93c5fd', accentText:'#bfdbfe', bg:'#0b1120', bgStart:'#0f172a', bgEnd:'#070d18', surface:'#111827', surfaceRaised:'#1e293b', surfaceSoft:'#162033', surfaceHover:'#273449', control:'rgba(55,65,81,.6)', navy:'#0f172a', text:'#e5e7eb', textBright:'#f8fafc', textSoft:'#cbd5e1', muted:'#7182a8', secondary:'#9ca3af', border:'#374151', borderSoft:'#334155', success:'#22c55e', successText:'#86efac', warning:'#f59e0b', warningText:'#fbbf24', danger:'#f43f5e', dangerText:'#fca5a5', info:'#38bdf8', infoText:'#dbeafe', shadow:'rgba(2,6,23,.35)' };
+export const lightColors = { primary:'#4f8cff', primaryDark:'#2563eb', primaryLight:'#2563eb', accent:'#2563eb', accentSoft:'#1d4ed8', accentText:'#1e40af', bg:'#f3f6fb', bgStart:'#f8fafc', bgEnd:'#eef2f7', surface:'#ffffff', surfaceRaised:'#ffffff', surfaceSoft:'#f1f5f9', surfaceHover:'#e8eef6', control:'#f8fafc', navy:'#0f172a', text:'#172033', textBright:'#0f172a', textSoft:'#334155', muted:'#64748b', secondary:'#475569', border:'#cbd5e1', borderSoft:'#d5dde8', success:'#22c55e', successText:'#166534', warning:'#f59e0b', warningText:'#92400e', danger:'#f43f5e', dangerText:'#b91c1c', info:'#38bdf8', infoText:'#1e40af', shadow:'rgba(15,23,42,.12)' };
+// `colors` is the mutable runtime palette. Keep the source palettes immutable so
+// toggling light -> dark repeatedly always restores the original values.
+export const colors = { ...darkColors };
+export const paletteFor = (theme: 'dark' | 'light') => theme === 'dark' ? darkColors : lightColors;
+export const applyTheme = (theme: 'dark' | 'light') => Object.assign(colors, paletteFor(theme));
+export const spacing = { xs: 6, sm: 10, md: 16, lg: 24, xl: 32 } as const;

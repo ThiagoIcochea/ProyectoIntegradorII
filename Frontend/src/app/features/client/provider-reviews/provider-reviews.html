@@ -1,0 +1,388 @@
+<div class="pr-page" *ngIf="product || selectedProvider">
+  <nav class="pr-breadcrumb">
+    <button type="button" class="pr-back" (click)="volverAlDetalle()" aria-label="Volver">&larr;</button>
+    <a routerLink="/app/rfq/catalog" class="crumb">Catalogo RFQ</a>
+    <span class="crumb-sep">&gt;</span>
+
+    <ng-container *ngIf="product; else providerBreadcrumb">
+      <button class="crumb crumb-link" (click)="volverAlDetalle()">
+        {{ product.producto }}
+      </button>
+      <span class="crumb-sep">&gt;</span>
+      <span class="crumb crumb--active">Proveedores y rese&ntilde;as</span>
+    </ng-container>
+
+    <ng-template #providerBreadcrumb>
+      <span class="crumb crumb--active">Analisis del proveedor</span>
+    </ng-template>
+
+    <button class="pr-cart-indicator" *ngIf="requestItems.length > 0" (click)="irAlCarrito()">
+      Solicitud actual
+      <span class="cart-count">{{ requestItems.length }}</span>
+    </button>
+  </nav>
+
+  <div class="pr-layout">
+    <main class="pr-main">
+      <header class="provider-hero" *ngIf="selectedProvider as provider">
+        <div class="provider-avatar-large">
+          {{ getProviderName(provider).charAt(0) }}
+        </div>
+
+        <div class="provider-hero__content">
+          <span class="eyebrow">Analisis del proveedor</span>
+          <h1>{{ getProviderName(provider) }}</h1>
+          <p class="provider-description">
+            {{ getProviderDescription(provider) || 'No disponible' }}
+          </p>
+
+          <div class="provider-hero__tags">
+            <span *ngIf="getProviderStatus(provider) as status">{{ status }}</span>
+            <span *ngIf="getProviderCategory(provider) as category">{{ category }}</span>
+            <span *ngIf="getProviderLocation(provider) as location">{{ location }}</span>
+            <span>En Nethink desde: {{ getProviderSince(provider) }}</span>
+          </div>
+        </div>
+
+        <div class="provider-score-card">
+          <strong>
+            {{ getProviderScore100(provider) === null ? 'No disponible' : (getProviderScore100(provider) + '/100') }}
+          </strong>
+          <span>Scoring general</span>
+        </div>
+      </header>
+
+      <header class="pr-header" *ngIf="product && !selectedProvider">
+        <span>Producto seleccionado</span>
+        <h1>Proveedores y rese&ntilde;as para {{ product.producto }}</h1>
+        <p>Lista de proveedores relacionados al producto seleccionado.</p>
+      </header>
+
+      <ng-container *ngIf="selectedProvider as provider">
+        <section class="provider-kpi-grid">
+          <div class="kpi-card">
+            <span>Pedidos completados</span>
+            <strong>{{ getCompletedOrders(provider) === null ? 'No disponible' : getCompletedOrders(provider) }}</strong>
+          </div>
+
+          <div class="kpi-card">
+            <span>Entregas a tiempo</span>
+            <strong>{{ formatPercent(getProviderOnTime(provider)) }}</strong>
+          </div>
+
+          <div class="kpi-card">
+            <span>Satisfaccion</span>
+            <strong>{{ getProviderSatisfaction(provider) }}%</strong>
+          </div>
+
+          <div class="kpi-card">
+            <span>Tiempo de respuesta</span>
+            <strong>{{ getProviderResponseLabel(provider) }}</strong>
+          </div>
+
+          <div class="kpi-card">
+            <span>Total likes</span>
+            <strong>{{ getProviderLikes(provider) }}</strong>
+          </div>
+
+          <div class="kpi-card">
+            <span>Total dislikes</span>
+            <strong>{{ getProviderDislikes(provider) }}</strong>
+          </div>
+
+          <div class="kpi-card">
+            <span>Total comentarios</span>
+            <strong>{{ getProviderTotalComments(provider) }}</strong>
+          </div>
+        </section>
+
+        <section class="analysis-card">
+          <div class="section-heading">
+            <span>Analisis de puntaje</span>
+            <h2>Indicadores comerciales</h2>
+          </div>
+
+          <div class="analysis-row">
+            <div class="analysis-row__label">
+              <span>Satisfaccion de clientes</span>
+              <strong>{{ getProviderSatisfaction(provider) }}%</strong>
+            </div>
+            <div class="analysis-track">
+              <span [style.width.%]="progressValue(getProviderSatisfaction(provider))"></span>
+            </div>
+          </div>
+
+          <div class="analysis-row">
+            <div class="analysis-row__label">
+              <span>Cumplimiento de entrega</span>
+              <strong>{{ formatPercent(getProviderCompliance(provider)) }}</strong>
+            </div>
+            <div class="analysis-track">
+              <span [style.width.%]="progressValue(getProviderCompliance(provider))"></span>
+            </div>
+          </div>
+
+          <div class="analysis-row">
+            <div class="analysis-row__label">
+              <span>Reputacion comercial</span>
+              <strong>{{ formatPercent(getProviderReputation(provider)) }}</strong>
+            </div>
+            <div class="analysis-track">
+              <span [style.width.%]="progressValue(getProviderReputation(provider))"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="reviews-section">
+          <div class="section-heading">
+            <span>Comentarios</span>
+            <h2>Rese&ntilde;as del producto ofrecido</h2>
+          </div>
+
+          <form class="review-form" (ngSubmit)="agregarComentarioProveedor(provider, 0)">
+            <div class="review-form__header">
+              <div>
+                <span>Nueva rese&ntilde;a</span>
+                <strong>Comparte tu experiencia con este producto de este proveedor</strong>
+              </div>
+
+            </div>
+
+            <textarea
+              [ngModel]="getReviewCommentDraft(provider, 0)"
+              (ngModelChange)="setReviewCommentDraft(provider, 0, $event)"
+              [ngModelOptions]="{ standalone: true }"
+              rows="3"
+              maxlength="420"
+              placeholder="Escribe un comentario claro sobre cumplimiento, atencion, entrega o soporte.">
+            </textarea>
+
+            <div class="review-form__footer">
+              <small *ngIf="getReviewDraftError(provider, 0)">{{ getReviewDraftError(provider, 0) }}</small>
+
+              <button type="submit" class="submit-review-btn" [disabled]="!canSubmitReview(provider, 0)">
+                Agregar rese&ntilde;a
+              </button>
+            </div>
+          </form>
+
+          <ng-container *ngIf="getReviews(provider).length > 0; else selectedProviderEmptyReviews">
+            <article class="review-card" *ngFor="let review of getReviews(provider)">
+              <div class="review-card__top">
+                <div>
+                  <strong>{{ getReviewAuthor(review) }}</strong>
+                  <small *ngIf="getReviewDate(review)">{{ formatFecha(getReviewDate(review)) }}</small>
+                </div>
+
+                <span
+                  class="reaction-badge"
+                  [class.reaction-badge--like]="getReviewReactionType(review) === 'LIKE'"
+                  [class.reaction-badge--dislike]="getReviewReactionType(review) === 'DISLIKE'">
+                  <ng-container *ngIf="getReviewReactionType(review) === 'LIKE'">&#128077;</ng-container>
+                  <ng-container *ngIf="getReviewReactionType(review) === 'DISLIKE'">&#128078;</ng-container>
+                  {{ getReviewReactionLabel(review) }}
+                </span>
+              </div>
+
+              <p>{{ getReviewComment(review) || 'Sin comentario escrito.' }}</p>
+
+              <div class="review-reaction-counts">
+                <span>{{ getCommentLikes(review) }} likes</span>
+                <span>{{ getCommentDislikes(review) }} dislikes</span>
+              </div>
+
+              <div class="comment-actions" aria-label="Reaccionar al comentario">
+                <button
+                  type="button"
+                  class="comment-reaction-btn comment-reaction-btn--like"
+                  [class.is-active]="hasUserReaction(review, 'LIKE')"
+                  (click)="reactToComment(review, 'LIKE', provider)">
+                  &#128077; Like
+                </button>
+
+                <button
+                  type="button"
+                  class="comment-reaction-btn comment-reaction-btn--dislike"
+                  [class.is-active]="hasUserReaction(review, 'DISLIKE')"
+                  (click)="reactToComment(review, 'DISLIKE', provider)">
+                  &#128078; Dislike
+                </button>
+              </div>
+            </article>
+          </ng-container>
+
+          <ng-template #selectedProviderEmptyReviews>
+            <div class="reviews-empty">
+              No hay rese&ntilde;as disponibles para este producto ofrecido por el proveedor.
+            </div>
+          </ng-template>
+        </section>
+      </ng-container>
+
+      <ng-container *ngIf="!selectedProvider">
+        <section class="providers-toolbar">
+          <div>
+            <strong>{{ providers.length }}</strong>
+            <span>proveedor{{ providers.length === 1 ? '' : 'es' }} asociado{{ providers.length === 1 ? '' : 's' }}</span>
+          </div>
+
+          <button type="button" class="refresh-btn" (click)="cargarProveedoresDelProducto()" [disabled]="loadingProviders">
+            {{ loadingProviders ? 'Cargando...' : 'Actualizar' }}
+          </button>
+        </section>
+
+        <section class="provider-list" *ngIf="!loadingProviders && providers.length > 0">
+          <article class="provider-card" *ngFor="let provider of providers; let i = index">
+            <div class="provider-card__top">
+              <div class="provider-avatar">
+                {{ getProviderName(provider).charAt(0) }}
+              </div>
+
+              <div class="provider-title">
+                <h2>{{ getProviderName(provider) }}</h2>
+
+                <div class="provider-tags">
+                  <span class="tag" *ngIf="getProviderStatus(provider) as status">{{ status }}</span>
+                  <span class="tag" *ngIf="getProviderCategory(provider) as category">{{ category }}</span>
+                  <span class="tag" *ngIf="getProviderDelivery(provider) as delivery">
+                    {{ formatDays(delivery) }}
+                  </span>
+                </div>
+              </div>
+
+              <button type="button" class="review-toggle" (click)="verDetalleProveedor(provider)">
+                Ver proveedor y rese&ntilde;as
+              </button>
+            </div>
+
+            <div class="provider-metrics">
+              <div class="metric">
+                <span>Rese&ntilde;as</span>
+                <strong>{{ getReviewCount(provider) }}</strong>
+              </div>
+
+              <div class="metric">
+                <span>Likes</span>
+                <strong>{{ getProviderLikes(provider) }}</strong>
+              </div>
+
+              <div class="metric">
+                <span>Dislikes</span>
+                <strong>{{ getProviderDislikes(provider) }}</strong>
+              </div>
+
+              <div class="metric">
+                <span>Satisfaccion</span>
+                <strong>{{ getProviderSatisfaction(provider) }}%</strong>
+              </div>
+            </div>
+
+            <div class="compact-progress">
+              <div class="analysis-row__label">
+                <span>Satisfaccion de clientes</span>
+                <strong>{{ getProviderSatisfaction(provider) }}%</strong>
+              </div>
+              <div class="analysis-track">
+                <span [style.width.%]="progressValue(getProviderSatisfaction(provider))"></span>
+              </div>
+            </div>
+
+          </article>
+        </section>
+
+        <section class="providers-loading" *ngIf="loadingProviders">
+          <div class="loader-ring"></div>
+          <p>Cargando proveedores asociados...</p>
+        </section>
+
+        <section class="providers-empty" *ngIf="!loadingProviders && providers.length === 0">
+          <h2>No hay proveedores asociados disponibles</h2>
+          <p>No se recibieron proveedores para este producto desde el backend.</p>
+          <button type="button" class="refresh-btn" (click)="cargarProveedoresDelProducto()">Reintentar</button>
+        </section>
+      </ng-container>
+    </main>
+
+    <aside class="pr-aside">
+      <section class="product-card" *ngIf="product">
+        <div class="product-image">
+          <img
+            *ngIf="getProductImage() as imageUrl; else productPlaceholder"
+            [src]="imageUrl"
+            [alt]="product.producto"
+            loading="lazy"
+            decoding="async"
+            (error)="markProductImageFailed()"
+          >
+
+          <ng-template #productPlaceholder>
+            <div class="image-placeholder">
+              <span>{{ product.marca?.slice(0, 2) || 'RFQ' }}</span>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="product-info">
+          <span>{{ product.marca }}</span>
+          <h2>{{ product.producto }}</h2>
+          <p *ngIf="product.categoria">{{ product.categoria }}</p>
+        </div>
+      </section>
+
+      <section class="request-card" *ngIf="product">
+        <div class="request-card__header">
+          <span>Solicitud RFQ</span>
+          <strong>Agregar producto</strong>
+        </div>
+
+        <div class="offer-qty-row">
+          <span class="offer-qty-label">Cantidad</span>
+          <div class="ap-qty-control">
+            <button type="button" class="qty-btn" (click)="disminuirQty()" [disabled]="qty <= 1">-</button>
+            <span class="qty-value">{{ qty }}</span>
+            <button type="button" class="qty-btn" (click)="aumentarQty()">+</button>
+          </div>
+        </div>
+
+        <button class="offer-btn-primary" (click)="agregarAlCarrito()" *ngIf="!yaEnCarrito">
+          + Agregar a solicitud RFQ
+        </button>
+
+        <button class="offer-btn-added" (click)="irAlCarrito()" *ngIf="yaEnCarrito">
+          Ya esta en tu solicitud
+        </button>
+      </section>
+
+      <section class="provider-aside-card" *ngIf="selectedProvider as provider">
+        <div class="request-card__header">
+          <span>Resumen comercial</span>
+          <strong>{{ getProviderName(provider) }}</strong>
+        </div>
+
+        <div class="aside-stat">
+          <span>Satisfaccion</span>
+          <strong>{{ getProviderSatisfaction(provider) }}%</strong>
+        </div>
+
+        <div class="aside-stat">
+          <span>Likes</span>
+          <strong>{{ getProviderLikes(provider) }}</strong>
+        </div>
+
+        <div class="aside-stat">
+          <span>Dislikes</span>
+          <strong>{{ getProviderDislikes(provider) }}</strong>
+        </div>
+
+        <div class="aside-stat">
+          <span>Comentarios</span>
+          <strong>{{ getProviderTotalComments(provider) }}</strong>
+        </div>
+
+        <button type="button" class="offer-btn-primary" (click)="irAlCarrito()">
+          Volver al catalogo
+        </button>
+      </section>
+    </aside>
+  </div>
+</div>

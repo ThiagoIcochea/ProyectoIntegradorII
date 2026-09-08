@@ -1,0 +1,78 @@
+@import './colors';
+@import './radius' ;
+@import './shadows' ;
+
+@mixin card {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@mixin focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.18);
+  border-color: rgba(79, 140, 255, 0.65);
+}
+
+@mixin control-base {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.8rem 1rem;
+  border-radius: $radius-md;
+  border: 1px solid $border;
+  background: rgba(17, 24, 39, 0.92);
+  color: $text-primary;
+  font: inherit;
+  line-height: $line-height-base;
+  transition:
+    border-color $transition-base,
+    background-color $transition-base,
+    box-shadow $transition-base,
+    transform $transition-base;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:hover {
+    border-color: rgba(148, 163, 184, 0.28);
+    background: rgba(20, 28, 45, 0.96);
+  }
+
+  &:focus,
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+@mixin button-base {
+  min-height: 44px;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform $transition-base,
+    background-color $transition-base,
+    border-color $transition-base,
+    box-shadow $transition-base,
+    color $transition-base;
+}
+
+@mixin section-title {
+  font-family: $heading-font;
+  letter-spacing: -0.02em;
+  line-height: $line-height-tight;
+}
+
+@mixin mobile-only {
+  @media (min-width: 992px) {
+    @content;
+  }
+}

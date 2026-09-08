@@ -1,0 +1,274 @@
+<!-- Backend touchpoint: client account fields and acceptance gate for registration. -->
+<div class="auth-page">
+  <div class="auth-shell">
+
+    <section class="auth-side">
+      <div class="auth-brand">Nethink</div>
+
+      <div class="auth-side__content">
+
+        <span class="auth-kicker">
+          Registro de cliente
+        </span>
+
+        <h1>
+          Compra infraestructura de red con mayor control.
+        </h1>
+
+        <p>
+          Crea tu cuenta para generar RFQs, comparar proveedores y gestionar
+          compras de switches, routers, firewalls y otros equipos de networking.
+        </p>
+
+        <ul class="auth-benefits">
+          <li>Solicitudes RFQ para productos de red</li>
+          <li>Comparación de proveedores y tiempos de entrega</li>
+          <li>Seguimiento centralizado de órdenes</li>
+        </ul>
+
+      </div>
+    </section>
+
+    <section class="auth-form-panel">
+
+      <div class="auth-form-header">
+        <h2>Registro de Cliente</h2>
+
+        <p>
+          Ingresa tus datos para crear tu cuenta corporativa.
+        </p>
+      </div>
+
+      <form class="auth-form">
+
+        <div class="form-error" *ngIf="formError">
+          {{ formError }}
+        </div>
+
+        <div class="form-grid form-grid--2">
+
+          <div class="form-group" [class.has-error]="isFieldMissing('nombres')">
+
+            <label for="nombres">
+              Nombres
+            </label>
+
+            <input
+              id="nombres"
+              type="text"
+              placeholder="Tus nombres"
+              [(ngModel)]="form.nombres"
+              name="nombres"
+              required
+            />
+
+            <small *ngIf="isFieldMissing('nombres')">Campo obligatorio.</small>
+
+          </div>
+
+          <div class="form-group" [class.has-error]="isFieldMissing('apellidos')">
+
+            <label for="apellidos">
+              Apellidos
+            </label>
+
+            <input
+              id="apellidos"
+              type="text"
+              placeholder="Tus apellidos"
+              [(ngModel)]="form.apellidos"
+              name="apellidos"
+              required
+            />
+
+            <small *ngIf="isFieldMissing('apellidos')">Campo obligatorio.</small>
+
+          </div>
+
+        </div>
+
+        <div class="form-group" [class.has-error]="isFieldMissing('correo')">
+
+          <label for="correo">
+            Correo electrónico
+          </label>
+
+          <input
+            id="correo"
+            type="email"
+            placeholder="correo@empresa.com"
+            [(ngModel)]="form.correo"
+            name="correo"
+            required
+          />
+
+          <small *ngIf="isFieldMissing('correo')">Campo obligatorio.</small>
+
+        </div>
+
+        <div class="form-grid form-grid--2">
+
+          <div class="form-group" [class.has-error]="isFieldMissing('telefono')">
+
+            <label for="telefono">
+              Teléfono
+            </label>
+
+            <input
+              id="telefono"
+              type="text"
+              placeholder="+51 987 654 321"
+              [(ngModel)]="form.telefono"
+              name="telefono"
+              required
+            />
+
+            <small *ngIf="isFieldMissing('telefono')">Campo obligatorio.</small>
+
+          </div>
+
+          <div class="form-group" [class.has-error]="isFieldMissing('whatsapp')">
+
+            <label for="whatsapp">
+              WhatsApp
+            </label>
+
+            <input
+              id="whatsapp"
+              type="text"
+              placeholder="+51 987 654 321"
+              [(ngModel)]="form.whatsapp"
+              name="whatsapp"
+              required
+            />
+
+            <small *ngIf="isFieldMissing('whatsapp')">Campo obligatorio.</small>
+
+          </div>
+
+        </div>
+
+        <div class="form-group" [class.has-error]="isFieldMissing('password')">
+
+          <label for="password">
+            Contraseña
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            [(ngModel)]="form.password"
+            name="password"
+            required
+          />
+
+          <small *ngIf="isFieldMissing('password')">Campo obligatorio.</small>
+
+        </div>
+
+        <div class="form-group" [class.has-error]="isFieldMissing('direccion')">
+
+          <label for="direccion">
+            Dirección de domicilio / entrega
+          </label>
+
+          <input
+            id="direccion"
+            type="text"
+            placeholder="Av. Principal 123, Distrito, Ciudad"
+            [(ngModel)]="form.direccion"
+            name="direccion"
+            required
+          />
+
+          <small *ngIf="isFieldMissing('direccion')">Campo obligatorio.</small>
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="fotoPerfil">
+            URL Foto Perfil (Opcional)
+          </label>
+
+          <input
+            id="fotoPerfil"
+            type="text"
+            placeholder="https://..."
+            [(ngModel)]="form.fotoPerfil"
+            name="fotoPerfil"
+          />
+
+        </div>
+
+        <label class="checkbox-row">
+
+          <input
+            type="checkbox"
+            [(ngModel)]="acepta"
+            name="acepta"
+          />
+
+          <span>
+            He leído y acepto los
+            <button type="button" class="legal-link" (click)="openLegalModal('terms')">Términos y Condiciones</button>
+            y la
+            <button type="button" class="legal-link" (click)="openLegalModal('privacy')">Política de Privacidad</button>.
+          </span>
+
+        </label>
+
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="registrar()"
+        >
+          Crear cuenta
+        </button>
+
+      </form>
+
+      <div class="auth-form-footer">
+
+        <span>
+          ¿Ya tienes una cuenta?
+        </span>
+
+        <a routerLink="/login">
+          Inicia sesión aquí
+        </a>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <div *ngIf="showLegalModal" class="legal-modal-backdrop">
+    <section class="legal-modal" role="dialog" aria-modal="true" aria-labelledby="client-legal-title">
+      <header class="legal-modal__header">
+        <div>
+          <span>Nethink Cliente</span>
+          <h3 id="client-legal-title">{{ legalModalTitle }}</h3>
+        </div>
+
+        <button type="button" class="legal-modal__close" (click)="closeLegalModal()" aria-label="Cerrar modal">
+          &times;
+        </button>
+      </header>
+
+      <div class="legal-modal__body">
+        <p>{{ legalModalIntro }}</p>
+
+        <ul>
+          <li *ngFor="let item of legalModalItems">{{ item }}</li>
+        </ul>
+      </div>
+
+      <footer class="legal-modal__footer">
+        <button type="button" class="btn-primary" (click)="closeLegalModal()">Entendido</button>
+      </footer>
+    </section>
+  </div>
+</div>

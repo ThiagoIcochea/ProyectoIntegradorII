@@ -1,0 +1,219 @@
+﻿.admin-settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-card {
+  background: rgba(16, 25, 45, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 16px 40px rgba(2, 6, 23, 0.22);
+  backdrop-filter: blur(12px);
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group input,
+.form-group select {
+  min-height: 48px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  padding: 0 0.95rem;
+  border-radius: 12px;
+  color: var(--theme-text);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background-color 180ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(79, 140, 255, 0.65);
+    box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.18);
+    background: rgba(12, 18, 31, 0.96);
+  }
+}
+
+.config-row {
+  display: grid;
+  grid-template-columns: 220px 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 14px;
+  background: rgba(17, 24, 39, 0.52);
+}
+
+.config-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  strong {
+    color: var(--theme-text);
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    width: fit-content;
+    border-radius: 999px;
+    padding: 0.32rem 0.58rem;
+    background: rgba(79, 140, 255, 0.14);
+    color: var(--theme-accent-text);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+}
+
+.config-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+
+  small {
+    flex-basis: 100%;
+    color: var(--theme-accent-text);
+    text-align: right;
+  }
+}
+
+.btn-primary,
+.btn-secondary {
+  min-height: 48px;
+  padding: 0 1.4rem;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+.btn-primary {
+  border: 1px solid rgba(79, 140, 255, 0.24);
+  background: linear-gradient(135deg, #4f8cff 0%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(79, 140, 255, 0.24);
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 10px 20px rgba(79, 140, 255, 0.2);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 4px rgba(79, 140, 255, 0.18),
+      0 14px 30px rgba(79, 140, 255, 0.24);
+  }
+}
+
+.btn-secondary {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(17, 24, 39, 0.92);
+  color: var(--theme-text);
+}
+
+:host-context(body.light-theme) {
+  .settings-card {
+    background: var(--theme-surface-raised);
+    border-color: var(--theme-border);
+  }
+
+  .form-group input,
+  .form-group select,
+  .config-row {
+    background: var(--theme-surface);
+    border-color: var(--theme-border);
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    background: var(--theme-surface);
+  }
+
+  .btn-secondary {
+    background: var(--theme-surface);
+    color: var(--theme-text);
+    border-color: var(--theme-border);
+  }
+}
+
+.status {
+  border-radius: 999px;
+  padding: 0.38rem 0.65rem;
+  background: rgba(34, 197, 94, 0.14);
+  color: #22c55e;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.status--inactive {
+  background: rgba(239, 68, 68, 0.14);
+  color: var(--theme-danger-text);
+}
+
+.empty-state {
+  padding: 1rem;
+  color: var(--theme-text-secondary);
+}
+
+.config-row--skeleton {
+  grid-template-columns: 220px 1fr 180px;
+}
+
+.skeleton-line,
+.skeleton-block {
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.12), rgba(148, 163, 184, 0.24), rgba(148, 163, 184, 0.12));
+  min-height: 16px;
+}
+
+.skeleton-line--short {
+  width: 60%;
+}
+
+.skeleton-block {
+  min-height: 48px;
+  border-radius: 14px;
+}
+
+@media (max-width: 720px) {
+  .config-row,
+  .config-row--skeleton {
+    grid-template-columns: 1fr;
+  }
+
+  .config-actions {
+    justify-content: stretch;
+  }
+
+  .config-actions .btn-primary,
+  .config-actions .btn-secondary {
+    width: 100%;
+  }
+}
+
+

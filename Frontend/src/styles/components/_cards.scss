@@ -1,0 +1,55 @@
+.card,
+.panel,
+.surface-card {
+	@include card;
+	padding: 1.25rem;
+}
+
+.card-hover {
+	transition: transform $transition-base, box-shadow $transition-base, border-color $transition-base;
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: $shadow-lg;
+		border-color: rgba(79, 140, 255, 0.22);
+	}
+}
+
+.card-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.card-title {
+	margin: 0;
+	font-family: $heading-font;
+	font-size: 1.15rem;
+	line-height: $line-height-tight;
+}
+
+.card-subtitle {
+	margin: 0.25rem 0 0;
+	color: $text-secondary;
+}
+
+.stat-card {
+	@include card;
+	padding: 1rem 1.1rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+
+	strong {
+		display: block;
+		font-size: 1.45rem;
+		color: $text-primary;
+	}
+
+	span {
+		color: $text-secondary;
+	}
+}

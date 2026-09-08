@@ -1,0 +1,39 @@
+﻿.badge,
+.pill,
+.status-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.38rem 0.7rem;
+	border-radius: $radius-pill;
+	border: 1px solid transparent;
+	font-size: 0.76rem;
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.badge--primary {
+	background: rgba(79, 140, 255, 0.14);
+	border-color: rgba(79, 140, 255, 0.22);
+	color: $primary-light;
+}
+
+.badge--success {
+	background: rgba(34, 197, 94, 0.14);
+	border-color: rgba(34, 197, 94, 0.2);
+	color: var(--theme-success-text);
+}
+
+.badge--warning {
+	background: rgba(245, 158, 11, 0.14);
+	border-color: rgba(245, 158, 11, 0.2);
+	color: var(--theme-warning-text);
+}
+
+.badge--danger {
+	background: rgba(244, 63, 94, 0.14);
+	border-color: rgba(244, 63, 94, 0.2);
+	color: #fda4af;
+}
+

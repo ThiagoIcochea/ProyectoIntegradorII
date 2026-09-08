@@ -1,0 +1,78 @@
+<!-- Backend touchpoint: scoring results and provider selection action live in this view. -->
+<div class="results-page">
+  <section class="results-main">
+    <div class="page-title">
+      <a routerLink="/app/rfq/catalog" class="back-button">←</a>
+      <div>
+        <span>Paso 2 de 3</span>
+        <h1>Proveedores Compatibles</h1>
+        <p>Selecciona la mejor opción para proceder con tu orden de compra.</p>
+      </div>
+    </div>
+
+    <div class="success-alert" *ngIf="providers.length > 0">
+      <div class="success-alert__icon">✓</div>
+      <div>
+        <strong>Análisis de Scoring completado</strong>
+        <p>Se han encontrado {{ providers.length }} proveedores que cumplen con el 100% de tu mix de productos.</p>
+      </div>
+    </div>
+
+    <div class="provider-list">
+      <article class="provider-card" *ngFor="let provider of providers; let i = index">
+        <div class="provider-card__top">
+          <div class="provider-icon">#{{ i + 1 }}</div>
+          
+          <div class="provider-info">
+            <h2>{{ provider.nombreProveedor }}</h2>
+            <p>Puntaje de Coincidencia: <strong>{{ provider.scoreFinal*100 | number:'1.1-2' }} / 100</strong></p>
+          </div>
+
+          <div class="provider-badges">
+            <span *ngIf="i === 0" class="best-choice-badge">Mejor Opción</span>
+            <span class="verified-badge">Verificado</span>
+          </div>
+        </div>
+
+        <div class="provider-metrics">
+          <div>
+            <span>Cotización Total (Inc. IGV)</span>
+            <strong>S/ {{ provider.totalCotizacion | number:'1.2-2' }}</strong>
+          </div>
+
+          <div>
+            <span>Tiempo Máximo de Entrega</span>
+            <strong>{{ provider.tiempoEntregaPromedio }} días hábiles</strong>
+          </div>
+        </div>
+
+        <div class="provider-actions">
+          <!-- Botón único para avanzar directamente -->
+          <button (click)="seleccionarProveedor(provider)" class="btn-primary">
+            Seleccionar este proveedor y ver detalle →
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <aside class="summary-panel">
+    <div class="summary-header">
+      <h2>Resumen de Solicitud</h2>
+    </div>
+
+    <div class="summary-list">
+      <div class="summary-item" *ngFor="let item of summaryItems">
+        <div class="item-details">
+          <strong>{{ item.name }}</strong>
+          <span>Cantidad: {{ item.qty }} unidades</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-box">
+      <span>Estado</span>
+      <strong>Esperando selección</strong>
+    </div>
+  </aside>
+</div>

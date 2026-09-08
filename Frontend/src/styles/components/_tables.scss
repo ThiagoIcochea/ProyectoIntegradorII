@@ -1,0 +1,49 @@
+﻿.table-wrap {
+	width: 100%;
+	overflow-x: auto;
+	border-radius: $radius-lg;
+	border: 1px solid $border;
+	background: rgba(16, 25, 45, 0.7);
+}
+
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+	min-width: 720px;
+
+	thead th {
+		position: sticky;
+		top: 0;
+		background: rgba(10, 16, 30, 0.92);
+		color: $text-primary;
+		text-align: left;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-weight: 800;
+		padding: 0.95rem 1rem;
+		border-bottom: 1px solid $border;
+	}
+
+	tbody td {
+		padding: 0.95rem 1rem;
+		border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+		color: $text-secondary;
+		vertical-align: middle;
+	}
+
+	tbody tr {
+		transition: background-color $transition-fast, transform $transition-fast;
+
+		&:hover {
+			background: var(--theme-glass);
+		}
+	}
+}
+
+.table-empty {
+	padding: 1.5rem;
+	text-align: center;
+	color: $text-muted;
+}
+

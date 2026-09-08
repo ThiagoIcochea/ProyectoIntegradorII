@@ -1,0 +1,269 @@
+<div class="pd-page" *ngIf="!loading && product">
+  <nav class="pd-breadcrumb">
+    <button type="button" class="pd-back" (click)="volver()" aria-label="Volver al catalogo">&larr;</button>
+    <a routerLink="/app/rfq/catalog" class="crumb">Catalogo RFQ</a>
+    <span class="crumb-sep">&gt;</span>
+    <span class="crumb" *ngIf="product.categoria">{{ product.categoria }}</span>
+    <span class="crumb-sep" *ngIf="product.categoria">&gt;</span>
+    <span class="crumb crumb--active">{{ product.producto }}</span>
+
+    <button class="pd-cart-indicator" *ngIf="requestItems.length > 0" (click)="irAlCarrito()">
+      Solicitud actual
+      <span class="cart-count">{{ requestItems.length }}</span>
+    </button>
+  </nav>
+
+  <div class="pd-layout">
+    <section class="pd-gallery" aria-label="Imagenes del producto">
+      <div class="gallery-main" [class.zoomed]="imageZoomed && imagenActiva" (click)="imagenActiva && toggleZoom()">
+        <ng-container *ngIf="imagenActiva as activeImage; else noProductImage">
+          <img
+            [src]="activeImage"
+            [alt]="product.producto"
+            class="gallery-main-img"
+            loading="lazy"
+            decoding="async"
+            (error)="handleImageError(activeImage)"
+          >
+        </ng-container>
+
+        <ng-template #noProductImage>
+          <div class="gallery-placeholder">
+            <span>{{ product.marca?.slice(0, 2) || 'RFQ' }}</span>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="gallery-thumbs" *ngIf="imagenes.length > 1">
+        <button
+          type="button"
+          class="thumb-btn"
+          *ngFor="let img of imagenes; let i = index"
+          [class.active]="selectedImageIndex === i"
+          (click)="selectImage(i)"
+          [attr.aria-label]="'Vista ' + (i + 1)">
+          <img [src]="img" [alt]="'Vista ' + (i + 1)" loading="lazy" (error)="handleImageError(img)">
+        </button>
+      </div>
+    </section>
+
+    <main class="pd-info">
+      <header class="pd-header">
+        <div class="pd-brand-row">
+          <span class="pd-brand" *ngIf="product.marca">{{ product.marca }}</span>
+          <span class="pd-category" *ngIf="product.categoria">{{ product.categoria }}</span>
+          <span class="pd-id" *ngIf="product.idProducto">ID #{{ product.idProducto }}</span>
+        </div>
+
+        <h1 class="pd-title">{{ product.producto }}</h1>
+        <p class="pd-desc" *ngIf="product.descripcion">{{ product.descripcion }}</p>
+      </header>
+
+      <section class="summary-panel">
+        <div class="summary-item" *ngFor="let item of resumenCards">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.hint }}</small>
+        </div>
+      </section>
+
+      <section class="pd-intelligence">
+        <div class="pd-score">
+          <div class="pd-score__header">
+            <span>Calidad de ficha</span>
+            <strong>{{ fichaCompletaPercent }}%</strong>
+          </div>
+
+          <div class="pd-score__track">
+            <span [style.width.%]="fichaCompletaPercent"></span>
+          </div>
+
+          <p>Mientras mas completa este la ficha, mas facil es comparar proveedores dentro del RFQ.</p>
+        </div>
+
+        <div class="pd-signal-list">
+          <div class="pd-signal" *ngFor="let signal of rfqSignals">
+            <span></span>
+            <div>
+              <strong>{{ signal.title }}</strong>
+              <p>{{ signal.text }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pd-quick-specs" *ngIf="specsDestacadas.length > 0">
+        <div class="section-heading">
+          <span>Resumen tecnico</span>
+          <h2>Datos clave del producto</h2>
+        </div>
+
+        <div class="quick-spec-grid">
+          <div class="quick-spec" *ngFor="let spec of specsDestacadas">
+            <span>{{ spec.nombre }}</span>
+            <strong>{{ spec.valor }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="pd-tabs">
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'specs'" (click)="setTab('specs')">
+          Especificaciones
+        </button>
+
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'delivery'" (click)="setTab('delivery')">
+          Entrega
+        </button>
+
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'providers'" (click)="setTab('providers')">
+          Proveedores y resenas
+        </button>
+      </section>
+
+      <section class="pd-tab-content" *ngIf="activeTab === 'specs'">
+        <div class="specs-grid" *ngIf="product.especificaciones?.length; else noSpecs">
+          <div class="spec-row" *ngFor="let s of product.especificaciones">
+            <span class="spec-name">{{ s.nombre }}</span>
+            <span class="spec-value">{{ s.valor }}</span>
+          </div>
+        </div>
+
+        <ng-template #noSpecs>
+          <p class="empty-tab">No hay especificaciones registradas para este producto.</p>
+        </ng-template>
+      </section>
+
+      <section class="pd-tab-content" *ngIf="activeTab === 'delivery'">
+        <div class="delivery-grid">
+          <div class="delivery-card" *ngIf="product.tiempoEntregaDias != null">
+            <span>Tiempo de entrega</span>
+            <strong>{{ product.tiempoEntregaDias }} dias habiles</strong>
+          </div>
+
+          <div class="delivery-card" *ngIf="product.garantiaMeses != null">
+            <span>Garantia</span>
+            <strong>{{ product.garantiaMeses }} meses</strong>
+          </div>
+
+          <div class="delivery-card" *ngIf="product.estado">
+            <span>Estado del producto</span>
+            <strong>{{ product.estado }}</strong>
+          </div>
+
+          <div class="delivery-card" *ngIf="precioReferenciaLabel">
+            <span>Precio referencial</span>
+            <strong>{{ precioReferenciaLabel }}</strong>
+          </div>
+
+          <div class="empty-tab empty-tab--boxed" *ngIf="!hasDeliveryInfo && !precioReferenciaLabel">
+            Las condiciones se confirmaran con los proveedores compatibles del RFQ.
+          </div>
+        </div>
+      </section>
+
+      <section class="pd-tab-content" *ngIf="activeTab === 'providers'">
+        <div class="providers-callout">
+          <div>
+            <h2>Proveedores y resenas</h2>
+            <p>Consulta proveedores asociados a este producto y sus resenas disponibles.</p>
+          </div>
+
+          <button type="button" class="inline-action" (click)="verResenasProveedores()">
+            Ver proveedores y resenas
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <aside class="pd-action-panel">
+      <div class="action-panel-card">
+        <div class="ap-header">
+          <span>Solicitud RFQ</span>
+          <strong>Agregar producto</strong>
+        </div>
+
+        <div class="ap-product">
+          <span>{{ product.marca }}</span>
+          <strong>{{ product.producto }}</strong>
+        </div>
+
+        <div class="ap-reference" *ngIf="precioReferenciaLabel || product.categoria || product.sku">
+          <div *ngIf="precioReferenciaLabel">
+            <span>Precio ref.</span>
+            <strong>{{ precioReferenciaLabel }}</strong>
+          </div>
+
+          <div *ngIf="product.categoria">
+            <span>Categoria</span>
+            <strong>{{ product.categoria }}</strong>
+          </div>
+
+          <div *ngIf="product.sku">
+            <span>SKU</span>
+            <strong>{{ product.sku }}</strong>
+          </div>
+        </div>
+
+        <div class="ap-qty-section">
+          <label class="ap-label">Cantidad</label>
+          <div class="ap-qty-control">
+            <button type="button" class="qty-btn" (click)="disminuirQty()" [disabled]="qty <= 1">-</button>
+            <span class="qty-value">{{ qty }}</span>
+            <button type="button" class="qty-btn" (click)="aumentarQty()">+</button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="ap-btn-primary"
+          (click)="agregarAlCarrito()"
+          *ngIf="!yaEnCarrito">
+          + Agregar a solicitud RFQ
+        </button>
+
+        <button
+          type="button"
+          class="ap-btn-added"
+          (click)="irAlCarrito()"
+          *ngIf="yaEnCarrito">
+          Ya esta en tu solicitud
+        </button>
+
+        <button type="button" class="ap-btn-secondary" (click)="verResenasProveedores()">
+          Ver proveedores y resenas
+        </button>
+      </div>
+
+      <div class="ap-cart-preview" *ngIf="requestItems.length > 0">
+        <div class="ap-cart-header">
+          Solicitud actual
+          <span class="cart-badge">{{ requestItems.length }}</span>
+        </div>
+
+        <div class="ap-cart-list">
+          <div class="ap-cart-item" *ngFor="let item of requestItems | slice:0:3">
+            <span class="ap-cart-name">{{ item.name }}</span>
+            <span class="ap-cart-qty">x{{ item.qty }}</span>
+          </div>
+
+          <div class="ap-cart-more" *ngIf="requestItems.length > 3">
+            +{{ requestItems.length - 3 }} mas en la solicitud
+          </div>
+        </div>
+
+        <button type="button" class="ap-btn-cart" (click)="irAlCarrito()">Ir al catalogo</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="pd-loading" *ngIf="loading">
+  <div class="loader-ring"></div>
+  <p>Cargando detalle del producto...</p>
+</div>
+
+<div class="pd-empty" *ngIf="!loading && !product">
+  <h2>Producto no encontrado</h2>
+  <p>No se pudo cargar la informacion del producto.</p>
+  <button type="button" class="ap-btn-secondary" (click)="volver()">Volver al catalogo</button>
+</div>

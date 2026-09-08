@@ -1,0 +1,127 @@
+<div class="payment-page">
+
+  <div class="page-title">
+    <h1>Confirmacion de Pago</h1>
+    <p>Solicitud: #{{ solicitudId }} para {{ provider?.nombreProveedor }}</p>
+  </div>
+
+  <div class="payment-grid">
+
+    <section class="payment-main">
+
+      <div class="step-section">
+
+        <h3>1. Ubicacion de Entrega</h3>
+
+        <p class="address-text">
+          {{ direccionEntrega }}
+        </p>
+
+      </div>
+
+      <div class="step-section">
+
+        <h3>2. Cuentas bancarias del proveedor</h3>
+
+        <div class="methods-list">
+
+          <div
+            class="method-card"
+            *ngFor="let m of metodosPago"
+            [class.active]="selectedMetodo === m"
+            (click)="selectedMetodo = m">
+
+            <div class="card-check" *ngIf="selectedMetodo === m">✓</div>
+
+            <strong>{{ m.entidad }}</strong>
+            <p>N° Cuenta: {{ m.numeroCuenta }}</p>
+            <small>Tipo: {{ m.tipo }}</small>
+
+          </div>
+
+          <div *ngIf="metodosPago.length === 0" class="no-data">
+            Cargando metodos de pago...
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="upload-section" *ngIf="selectedMetodo">
+
+        <h3>3. Datos de la Operacion</h3>
+
+        <div class="form-row">
+          <label for="codigoOperacion">Nro. de Operacion:</label>
+          <input
+            id="codigoOperacion"
+            type="text"
+            [(ngModel)]="codigoOperacion"
+          >
+        </div>
+
+        <div class="form-row">
+          <label for="comprobantePago">Comprobante de pago:</label>
+
+          <div class="file-upload">
+            <input
+              id="comprobantePago"
+              type="file"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+            >
+
+            <label class="file-upload__button" for="comprobantePago">
+              Seleccionar comprobante
+            </label>
+
+            <span class="file-upload__name">
+              {{ nombreArchivoCaptura || 'Ningun archivo seleccionado' }}
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <aside class="payment-summary">
+
+      <h3>Resumen de Solicitud</h3>
+
+      <div class="summary-row">
+        <span>Proveedor:</span>
+        <strong>{{ provider?.nombreProveedor }}</strong>
+      </div>
+
+      <div class="summary-row total-big">
+        <span>Total a pagar:</span>
+        <strong>S/ {{ totalSolicitud | number:'1.2-2' }}</strong>
+      </div>
+
+      <div class="summary-preview">
+
+        <div class="preview-box" *ngIf="previewUrl">
+          <img [src]="previewUrl" class="voucher-preview">
+        </div>
+
+        <div *ngIf="!previewUrl" class="preview-empty">
+          La vista previa aparecerá aquí
+        </div>
+
+      </div>
+
+      <button
+        class="confirm-btn"
+        [disabled]="!archivoCaptura || !selectedMetodo || !codigoOperacion || procesandoPago"
+        (click)="confirmarPago()">
+
+        {{ procesandoPago ? 'Procesando...' : 'Confirmar Pago' }}
+
+      </button>
+
+    </aside>
+
+  </div>
+
+</div>

@@ -1,0 +1,24 @@
+.admin-security-page { display: flex; flex-direction: column; gap: 1.5rem; }
+.page-header span { color: var(--theme-danger-text); font-weight: 800; text-transform: uppercase; font-size: .8rem; }
+.page-header h1 { color: var(--theme-text); margin: .35rem 0; font-size: 2rem; }
+.page-header p, .card-header p { color: var(--theme-text-secondary); margin: 0; }
+.security-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+.security-card { overflow: hidden; background: var(--theme-surface-raised); border: 1px solid var(--theme-border); border-radius: 16px; }
+.card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--theme-border); display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.card-header h2 { color: var(--theme-text); margin: 0 0 .3rem; }
+.security-table { overflow-x: auto; }
+.security-table__head, .security-table__row { display: grid; gap: 1rem; align-items: center; padding: 1rem 1.5rem; min-width: 760px; }
+.user-row { grid-template-columns: 2fr .7fr 1.25fr auto; }
+.ip-row { grid-template-columns: 1.1fr 2fr 1.25fr auto; }
+.security-table__head { background: var(--theme-surface-soft); color: var(--theme-text-secondary); text-transform: uppercase; font-size: .78rem; font-weight: 800; }
+.security-table__row { color: var(--theme-text); border-top: 1px solid var(--theme-control); }
+.security-table__row strong, .security-table__row small { display: block; overflow-wrap: anywhere; }
+.security-table__row small { margin-top: .25rem; color: var(--theme-text-secondary); }
+.status { display: inline-flex; padding: .4rem .65rem; border-radius: 999px; font-size: .78rem; font-weight: 800; }
+.status.danger { background: rgba(239, 68, 68, .14); color: #ef4444; }
+.btn-primary, .btn-secondary { min-height: 40px; border-radius: 11px; padding: 0 1rem; font-weight: 800; cursor: pointer; }
+.btn-primary { border: 0; background: #3b82f6; color: #fff; }
+.btn-secondary { border: 1px solid var(--theme-border); background: var(--theme-surface); color: var(--theme-text); }
+.btn-primary:disabled, .btn-secondary:disabled { opacity: .55; cursor: not-allowed; }
+.empty-state { margin: 1rem; padding: 1.25rem; border: 1px solid var(--theme-border); border-radius: 14px; color: var(--theme-text-secondary); background: var(--theme-surface); }
+@media (max-width: 720px) { .card-header { align-items: flex-start; flex-direction: column; } .card-header button { width: 100%; } }

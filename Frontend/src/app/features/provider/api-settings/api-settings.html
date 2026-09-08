@@ -1,0 +1,219 @@
+<div class="api-settings-page">
+
+  <div class="page-header">
+    <div>
+      <span>Integracion</span>
+      <h1>Configuracion API</h1>
+      <p>
+        Conecta tu inventario para sincronizar catalogo,
+        stock y precios en tiempo real.
+      </p>
+    </div>
+
+    <div
+      class="status-pill"
+      [ngClass]="'status-pill--' + connectionState"
+    >
+      {{ connectionLabel }}
+    </div>
+  </div>
+
+  <div class="api-grid" *ngIf="loading">
+    <section class="api-card api-card--skeleton">
+      <div class="skeleton-line skeleton-line--short"></div>
+      <div class="skeleton-line" *ngFor="let item of [1, 2, 3, 4]"></div>
+      <div class="skeleton-block skeleton-block--button"></div>
+    </section>
+
+    <aside class="sync-card api-card--skeleton">
+      <div class="skeleton-line skeleton-line--short"></div>
+      <div class="skeleton-block skeleton-block--button"></div>
+      <div class="skeleton-line" *ngFor="let item of [1, 2, 3]"></div>
+    </aside>
+  </div>
+
+  <div class="api-grid" *ngIf="!loading">
+
+    <section class="api-card">
+
+      <h2>Credenciales de conexion</h2>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="apiUrl">Endpoint URL</label>
+
+          <input
+            id="apiUrl"
+            type="text"
+            [(ngModel)]="config.apiUrl"
+            placeholder="https://api.tuempresa.com/catalogo"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="apiTipo">Tipo de conexion</label>
+
+          <select id="apiTipo" [(ngModel)]="config.apiTipo">
+            <option value="REST">REST</option>
+            <option value="GRAPHQL">GRAPHQL</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="apiToken">API Key / Token (opcional)</label>
+
+          <div class="secret-input">
+            <input
+              id="apiToken"
+              [type]="showApiKey ? 'text' : 'password'"
+              [(ngModel)]="config.apiToken"
+              placeholder="Solo si el endpoint requiere autenticacion"
+            />
+
+            <button
+              type="button"
+              class="secret-toggle"
+              (click)="toggleSecret('apiKey')"
+              [attr.aria-label]="showApiKey ? 'Ocultar token' : 'Mostrar token'">
+              <svg *ngIf="!showApiKey" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 5c5 0 8.5 4.5 9.5 7-1 2.5-4.5 7-9.5 7s-8.5-4.5-9.5-7C3.5 9.5 7 5 12 5Zm0 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" fill="currentColor"></path>
+              </svg>
+              <svg *ngIf="showApiKey" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="m4.3 3 16.7 16.7-1.4 1.4-3-3A10.4 10.4 0 0 1 12 19c-5 0-8.5-4.5-9.5-7 .5-1.2 1.6-2.9 3.2-4.3L2.9 4.4 4.3 3Zm4.2 7a4 4 0 0 0 5.5 5.5L12.6 14A2 2 0 0 1 10 11.4L8.5 10Zm3.5-5c5 0 8.5 4.5 9.5 7-.4 1.1-1.4 2.6-2.8 3.9L16 13.2A4 4 0 0 0 10.8 8L8.7 5.9A10.2 10.2 0 0 1 12 5Z" fill="currentColor"></path>
+              </svg>
+            </button>
+          </div>
+          <small>Puede dejarse vacio para endpoints publicos.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="estadoProveedor">Estado proveedor</label>
+
+          <input
+            id="estadoProveedor"
+            type="text"
+            [value]="config.estadoProveedor || '-'"
+            disabled
+          />
+        </div>
+
+      </div>
+
+      <div class="form-message form-message--warning" *ngIf="connectionMessage && connectionState !== 'error'">
+        {{ connectionMessage }}
+      </div>
+
+      <div class="actions">
+
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="probarConexion()"
+          [disabled]="testingConnection || !config.apiUrl?.trim()"
+        >
+          {{ testingConnection ? 'Probando...' : 'Probar conexion' }}
+        </button>
+
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="guardarConfiguracion()"
+        >
+          Guardar configuracion
+        </button>
+
+      </div>
+
+    </section>
+
+    <aside class="sync-card">
+
+      <h2>Estado de sincronizacion</h2>
+
+      <div
+        class="sync-status"
+        [ngClass]="'sync-status--' + connectionState"
+      >
+
+        <div class="sync-icon">
+          {{ syncIcon }}
+        </div>
+
+        <div>
+          <strong>{{ syncTitle }}</strong>
+
+          <span>
+            Ultima actualizacion:
+            {{ config.fechaUltimaConexion || '-' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="sync-list">
+
+        <div>
+          <span>Endpoint</span>
+          <div class="secret-value-row">
+            <strong
+              class="secret-value endpoint-value"
+              [class.secret-value--masked]="!showEndpoint && syncEndpoint"
+              [class.secret-value--expanded]="showEndpoint"
+              [title]="showEndpoint ? endpointLabel : ''">
+              {{ endpointDisplayLabel }}
+            </strong>
+
+            <button
+              type="button"
+              class="secret-toggle"
+              (click)="toggleEndpointVisibility()"
+              [attr.aria-label]="showEndpoint ? 'Ocultar endpoint' : 'Mostrar endpoint'">
+              <svg *ngIf="!showEndpoint" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 5c5 0 8.5 4.5 9.5 7-1 2.5-4.5 7-9.5 7s-8.5-4.5-9.5-7C3.5 9.5 7 5 12 5Zm0 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" fill="currentColor"></path>
+              </svg>
+              <svg *ngIf="showEndpoint" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="m4.3 3 16.7 16.7-1.4 1.4-3-3A10.4 10.4 0 0 1 12 19c-5 0-8.5-4.5-9.5-7 .5-1.2 1.6-2.9 3.2-4.3L2.9 4.4 4.3 3Zm4.2 7a4 4 0 0 0 5.5 5.5L12.6 14A2 2 0 0 1 10 11.4L8.5 10Zm3.5-5c5 0 8.5 4.5 9.5 7-.4 1.1-1.4 2.6-2.8 3.9L16 13.2A4 4 0 0 0 10.8 8L8.7 5.9A10.2 10.2 0 0 1 12 5Z" fill="currentColor"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <span>Metodo HTTP</span>
+          <strong class="safe-value">
+            {{ config.metodoHttp || '-' }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Codigo respuesta</span>
+
+          <strong
+            class="safe-value"
+            [class.text-warning]="connectionState === 'error'"
+          >
+            {{ config.codigoRespuesta || '-' }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Tiempo respuesta</span>
+          <strong class="safe-value">
+            {{ responseTimeLabel }}
+          </strong>
+        </div>
+
+      </div>
+
+      <div
+        class="info-box"
+        [ngClass]="'info-box--' + connectionState"
+      >
+        {{ connectionDescription }}
+      </div>
+
+    </aside>
+
+  </div>
+
+</div>

@@ -1,0 +1,27 @@
+@import './abstracts/theme';
+
+.swal2-container {
+  z-index: 2147483647 !important;
+}
+
+.swal2-popup {
+  z-index: 2147483647 !important;
+}
+@import './base/reset';
+@import './base/globals';
+@import './base/utilities';
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+@import './abstracts/variables';
+@import './abstracts/colors';
+@import './abstracts/spacing';
+@import './abstracts/typography';
+@import './abstracts/radius';
+@import './abstracts/shadows';
+@import './abstracts/mixins';
+
+@import './components/buttons';
+@import './components/mfa-modal';
+@import './components/integrations-modal';
+@import './components/skeleton';

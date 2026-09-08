@@ -1,0 +1,13 @@
+﻿.topbar-shell {
+	height: $topbar-height;
+}
+
+.topbar-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.45rem 0.8rem;
+	border-radius: $radius-pill;
+	border: 1px solid $border;
+	background: var(--theme-glass);
+}
+

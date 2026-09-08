@@ -1,0 +1,181 @@
+<!-- Backend touchpoint: profile fields rendered here depend on the active user role. -->
+<div class="profile-page">
+
+  <div class="page-header">
+    <div>
+      <h1>{{ usuario.nombres }} {{ usuario.apellidos }}</h1>
+      <p>Administra la información de tu cuenta · {{ rolTexto }}</p>
+    </div>
+  </div>
+
+  <div class="profile-grid" [class.profile-grid--provider]="esProveedor">
+
+    <section class="profile-card">
+
+      <div class="profile-header">
+
+        <div class="avatar-container">
+
+          <img
+            *ngIf="previewFoto"
+            [src]="previewFoto"
+            class="avatar-image"
+            alt="Foto de perfil"
+            (error)="onImageError()"
+          >
+
+          <div *ngIf="!previewFoto" class="avatar">
+            {{ usuario.nombres?.charAt(0) }}{{ usuario.apellidos?.charAt(0) }}
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="photo-controls">
+        <div class="form-group full">
+          <label for="modoImagen">Foto de perfil</label>
+
+          <select id="modoImagen" [(ngModel)]="modoImagen">
+            <option value="archivo">Subir desde mi computadora</option>
+            <option value="url">Usar URL de imagen</option>
+          </select>
+        </div>
+
+        <div class="upload-box" *ngIf="modoImagen === 'archivo'">
+          <input
+            id="fotoArchivo"
+            type="file"
+            accept="image/*"
+            (change)="seleccionarFoto($event)"
+            aria-label="Subir foto de perfil"
+            title="Subir foto de perfil"
+          >
+
+          <label class="upload-button" for="fotoArchivo">
+            Seleccionar imagen
+          </label>
+
+          <span>{{ nombreArchivoFoto || 'Ninguna imagen seleccionada' }}</span>
+        </div>
+
+        <div class="form-group full" *ngIf="modoImagen === 'url'">
+          <input
+            id="fotoUrl"
+            type="text"
+            placeholder="https://..."
+            [(ngModel)]="fotoUrl"
+            aria-label="URL de foto de perfil"
+            title="URL de foto de perfil"
+          >
+        </div>
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="nombres">Nombres</label>
+          <input
+            id="nombres"
+            type="text"
+            [(ngModel)]="usuario.nombres"
+            placeholder="Tus nombres"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="apellidos">Apellidos</label>
+          <input
+            id="apellidos"
+            type="text"
+            [(ngModel)]="usuario.apellidos"
+            placeholder="Tus apellidos"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="correo">Correo</label>
+          <input
+            id="correo"
+            type="email"
+            [(ngModel)]="usuario.correo"
+            placeholder="correo@empresa.com"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono</label>
+          <input
+            id="telefono"
+            type="text"
+            [(ngModel)]="usuario.telefono"
+            placeholder="+51 987 654 321"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="whatsapp">WhatsApp</label>
+          <input
+            id="whatsapp"
+            type="text"
+            [(ngModel)]="usuario.whatsapp"
+            placeholder="+51 987 654 321"
+          >
+        </div>
+
+        <div class="form-group full">
+          <label for="direccion">Dirección</label>
+          <input
+            id="direccion"
+            type="text"
+            [(ngModel)]="usuario.direccion"
+            placeholder="Av. Principal 123"
+          >
+        </div>
+        <app-ruc-lookup class="form-group full" *ngIf="esProveedor"
+          [(ruc)]="usuario.ruc" (empresaChange)="completarEmpresa($event)" />
+
+      </div>
+
+      <button class="btn-primary" (click)="guardarPerfil()">
+        Guardar cambios
+      </button>
+
+    </section>
+
+    <aside class="settings-card" *ngIf="!esProveedor">
+
+      <h2>Preferencias</h2>
+
+      <div class="setting-row">
+        <div>
+          <strong>Notificaciones RFQ</strong>
+          <span>Recibir alertas de cotizaciones y estados</span>
+        </div>
+
+        <input
+          type="checkbox"
+          [(ngModel)]="usuario.preferencias.notificaciones"
+          aria-label="Notificaciones RFQ"
+          title="Notificaciones RFQ"
+        >
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <strong>Entrega rápida</strong>
+          <span>Priorizar proveedores con menor tiempo</span>
+        </div>
+
+        <input
+          type="checkbox"
+          [(ngModel)]="usuario.preferencias.entregaRapida"
+          aria-label="Entrega rápida"
+          title="Entrega rápida"
+        >
+      </div>
+
+    </aside>
+
+  </div>
+</div>

@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin: 12px 0 6px;
+}
+
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--theme-border, #94a3b8);
+  background: var(--theme-surface, #fff);
+  color: var(--theme-text, #172033);
+}
+
+p {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+
+small {
+  display: block;
+  margin-top: 8px;
+}
+
+.ruc-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-block: 12px;
+  color: var(--theme-danger-text, #b91c1c);
+
+  p { flex: 1 1 220px; }
+}

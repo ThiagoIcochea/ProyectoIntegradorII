@@ -1,0 +1,190 @@
+<div class="admin-rfqs-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <span>Gestión RFQ</span>
+
+      <h1>Solicitudes RFQ</h1>
+
+      <p>
+        Monitorea todas las solicitudes del sistema.
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="summary-grid">
+
+    <div class="summary-card summary-card--total">
+
+      <span>Total RFQs</span>
+
+      <strong>
+        {{ getTotalRfqs() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card summary-card--success">
+
+      <span>Pagadas</span>
+
+      <strong>
+        {{ getPagadas() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card summary-card--warning">
+
+      <span>Pendientes</span>
+
+      <strong>
+        {{ getPendientes() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card summary-card--danger">
+
+      <span>Canceladas</span>
+
+      <strong>
+        {{ getCanceladas() }}
+      </strong>
+
+    </div>
+
+  </div>
+
+  <section class="rfqs-card">
+
+    <div class="rfqs-card__header">
+
+      <h2>
+        Listado de RFQs
+      </h2>
+
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Buscar por cliente, proveedor o ID..."
+        [(ngModel)]="search"
+        (input)="filtrarRfqs()"
+      />
+
+    </div>
+
+    <div class="rfqs-table">
+
+      <div class="rfqs-table__head">
+
+        <div>ID</div>
+
+        <div>Cliente</div>
+
+        <div>Empresa</div>
+
+        <div>Proveedor</div>
+
+        <div>Monto</div>
+
+        <div>Estado</div>
+
+        <div>Fecha</div>
+
+      </div>
+
+      <ng-container *ngIf="loading">
+        <div
+          class="rfqs-table__row rfqs-table__row--skeleton"
+          *ngFor="let row of skeletonRows"
+        >
+
+          <div
+            class="skeleton-line"
+            *ngFor="let item of [1,2,3,4,5,6,7]"
+          ></div>
+
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!loading">
+        <div
+          class="rfqs-table__row"
+          *ngFor="let rfq of filteredRfqs"
+        >
+
+        <div class="code">
+          RFQ-{{ rfq.idSolicitud }}
+        </div>
+
+        <div>
+          {{ rfq.nombreCliente }}
+        </div>
+
+        <div>
+          {{ rfq.nombreEmpresa || 'Independiente' }}
+        </div>
+
+        <div>
+          {{ rfq.nombreProveedor }}
+        </div>
+
+        <div>
+          S/ {{ rfq.total }}
+        </div>
+
+        <div>
+
+          <span
+            class="status"
+
+            [class.warning]="
+              rfq.estado === 'PAGO_PENDIENTE'
+              || rfq.estado === 'PAGO_VALIDANDO'
+            "
+
+            [class.danger]="
+              rfq.estado === 'CANCELADA'
+            "
+
+            [class.success]="
+              rfq.estado === 'PAGADA'
+              || rfq.estado === 'COMPLETADA'
+            "
+          >
+
+            {{ formatearEstado(rfq.estado) }}
+
+          </span>
+
+        </div>
+
+        <div>
+          {{ formatearFecha(rfq.fechaCreacion) }}
+        </div>
+
+        </div>
+      </ng-container>
+
+      <div
+        class="empty-state"
+        *ngIf="
+          !loading &&
+          filteredRfqs.length === 0
+        "
+      >
+
+        No existen solicitudes registradas.
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

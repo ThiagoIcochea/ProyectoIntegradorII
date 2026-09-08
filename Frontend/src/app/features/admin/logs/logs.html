@@ -1,0 +1,208 @@
+<div class="admin-products-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <span>Auditoría</span>
+
+      <h1>Logs del sistema</h1>
+
+      <p>
+        Registro de eventos, acciones de usuarios y errores internos.
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="products-grid">
+
+    <section class="products-card">
+
+      <div class="card-header">
+
+        <h2>
+          Eventos registrados
+        </h2>
+
+        <div style="display:flex; gap:0.75rem; align-items:center;">
+          <input
+            type="text"
+            class="search-box"
+            placeholder="Buscar por acción, módulo, descripción o IP..."
+            [(ngModel)]="searchText"
+            (input)="filtrarLogs()"
+          />
+          <button type="button" class="btn-secondary" (click)="exportarLogs()">Exportar logs</button>
+        </div>
+
+      </div>
+
+      <div class="products-table">
+
+        <div class="products-table__head">
+
+          <div>Acción</div>
+
+          <div>Módulo</div>
+
+          <div>Descripción</div>
+
+          <div>IP</div>
+
+          <div>Fecha</div>
+
+        </div>
+
+        <div
+          class="products-table__row"
+          *ngFor="let log of paginatedLogs"
+          [class.active]="selectedLog?.idLog === log.idLog"
+          (click)="seleccionarLog(log)"
+        >
+
+          <div class="product-name">
+
+            <span
+              class="status"
+              [class.warning]="log.accion === 'WARNING'"
+              [class.danger]="log.accion === 'ERROR'"
+            >
+              {{ log.accion }}
+            </span>
+
+          </div>
+
+          <div>
+            {{ log.modulo }}
+          </div>
+
+          <div>
+            {{ log.descripcion }}
+          </div>
+
+          <div>
+            {{ log.ip || 'N/A' }}
+          </div>
+
+          <div>
+            {{ log.fecha | date:'short' }}
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="pagination">
+
+        <button
+          (click)="paginaAnterior()"
+          [disabled]="currentPage === 1"
+        >
+          Anterior
+        </button>
+
+        <span>
+          Página {{ currentPage }}
+          de
+          {{ totalPages }}
+        </span>
+
+        <button
+          (click)="paginaSiguiente()"
+          [disabled]="currentPage === totalPages"
+        >
+          Siguiente
+        </button>
+
+      </div>
+
+    </section>
+
+    <aside class="detail-card">
+
+      <div class="detail-header">
+
+        <span>Evento seleccionado</span>
+
+        <h2>
+          {{ selectedLog?.accion }}
+        </h2>
+
+        <p>
+          {{ selectedLog?.modulo }}
+        </p>
+
+      </div>
+
+      <div class="detail-summary">
+
+        <div>
+
+          <span>ID Usuario</span>
+
+          <strong>
+            {{ selectedLog?.idUsuario || 'Sistema' }}
+          </strong>
+
+        </div>
+
+        <div>
+
+          <span>IP</span>
+
+          <strong>
+            {{ selectedLog?.ip || 'N/A' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+      <h3>
+        Información
+      </h3>
+
+      <div class="provider-list">
+
+        <div class="provider-item">
+
+          <div>
+
+            <strong>
+              Descripción
+            </strong>
+
+            <span>
+              {{ selectedLog?.descripcion }}
+            </span>
+
+          </div>
+
+          <div class="provider-stock">
+
+            <strong>
+              {{ selectedLog?.fecha | date:'short' }}
+            </strong>
+
+            <span>
+              {{ selectedLog?.modulo }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="info-box">
+        Los logs permiten auditar acciones críticas, errores del sistema
+        y eventos internos registrados desde backend.
+      </div>
+
+    </aside>
+
+  </div>
+
+</div>

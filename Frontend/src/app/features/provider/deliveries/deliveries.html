@@ -1,0 +1,180 @@
+<!-- Backend touchpoint: logistics and delivery progress are reflected in this screen. -->
+<div class="provider-deliveries-page">
+  <div class="page-header">
+    <div>
+      <span>Logistica</span>
+      <h1>Gestion de Entregas</h1>
+      <p>Administra ordenes activas, estados de despacho y confirmacion de entrega.</p>
+    </div>
+  </div>
+
+  <div class="deliveries-grid">
+    <aside class="orders-card">
+      <div class="list-header">
+        <h2>Ordenes activas</h2>
+        <span>{{ filteredDeliveries.length }} ordenes</span>
+      </div>
+
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Buscar por ID de orden, cliente o estado..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarEntregas()"
+      />
+
+      <div class="order-list">
+        <button
+          class="order-item"
+          *ngFor="let order of filteredDeliveries"
+          [class.active]="selectedRequest?.idSolicitud === order.idSolicitud"
+          (click)="seleccionarSolicitud(order)"
+        >
+          <div>
+            <strong>{{ getOrCode(order) }}</strong>
+            <p>{{ order.nombreEmpresa  }}</p>
+            <small> Número de equipos:   {{ order.cantidadProductos }}</small>
+          </div>
+
+          <div class="order-meta">
+            <span>{{ getFecha(order.fechaCreacion) }} a las  {{  getHora(order.fechaCreacion)    }}   </span>
+            <em
+              [class.shipping]="order.estado === 'EN_CAMINO' || order.estado === 'En camino'"
+              [class.delivered]="order.estado === 'ENTREGADA' || order.estado === 'Entregado'">
+              {{ order.estado }}
+            </em>
+            <small class="claim-mini-badge" *ngIf="hasDelayClaim(order)">Reclamo por demora</small>
+          </div>
+        </button>
+
+        <div class="empty-state" *ngIf="filteredDeliveries.length === 0">
+          No se encontraron entregas.
+        </div>
+      </div>
+    </aside>
+
+    <section class="delivery-detail-card"     >
+      <div class="detail-header">
+        <div>
+          <span class="status-pill"> {{selectedRequest?.estado}} </span>
+          <h2>Orden {{getOrCode(selectedRequest)}}    </h2>
+          <p>Destino: Sede principal, Lima</p>
+        </div>
+      </div>
+
+      <div class="provider-claim-alert" *ngIf="selectedDelayClaim as claim">
+        <div>
+          <span>Reclamo pendiente del cliente</span>
+          <h3>Demora en entrega</h3>
+          <p>{{ claim.descripcion }}</p>
+        </div>
+
+        <div class="provider-claim-alert__meta">
+          <strong>{{ claim.diasDemora }} dia{{ claim.diasDemora === 1 ? '' : 's' }}</strong>
+          <small>Fecha prometida: {{ formatClaimDate(claim.fechaPrometida) }}</small>
+          <small>Estado: {{ claim.estado }}</small>
+        </div>
+      </div>
+
+        <div class="detail-grid">
+          <div class="shipment-info">
+            <h3>Informacion de envio</h3>
+
+          <div class="info-grid">
+            <div>
+              <span>Cliente destino</span>
+              <strong>  {{selectedRequest?.nombreEmpresa}}        </strong>
+            </div>
+
+            <div>
+              <span>Contacto receptor</span>
+              <strong> {{ selectedRequest?.nombreCliente    }}         </strong>
+              <small>      </small>
+            </div>
+
+            <div class="full">
+              <span>Dirección de entrega</span>
+              <strong>   {{ selectedRequest?.direccionEnvio | json }}            </strong>
+            </div>
+             <div class="full">
+              <span>Información de contacto</span>
+              <strong> Número de Contacto:  {{ selectedRequest?.telefono | json }}            </strong>
+               <strong> Número de Whatsapp:  {{ selectedRequest?.whatsapp | json }}            </strong>
+            </div>
+          </div>
+
+            <h3>Contenido del envio</h3>
+
+            <div class="shipment-table">
+              <div class="shipment-table__head">
+                <div>Producto</div>
+                <div>SKU</div>
+                <div>Cant.</div>
+              </div>
+
+            <div class="shipment-table__row" *ngFor="let item of (details$ | async)    ">
+              <div>{{ item.nombreProducto }}</div>
+              <div>{{item.skuGlobal}}</div>
+              <div>{{ item.cantidad }}</div>
+            </div>
+          </div>
+        </div>
+
+          <aside class="delivery-progress-card">
+            <h3>Progreso de entrega</h3>
+
+            <div class="timeline">
+              <div
+                class="timeline-item"
+                *ngFor="let step of (tracking$ | async)"
+                [ngClass]="step.estado"
+              >
+                <div class="marker">
+                  <span *ngIf="step.estado === 'done'">OK</span>
+                  <span *ngIf="step.estado === 'active'">...</span>
+                </div>
+
+                <div>
+                  <strong>{{ step.descripcion }}</strong>
+                  <p>{{ step.fecha | date:'short' }}</p>
+                </div>
+              </div>
+            </div>
+
+          <div class="update-box" 
+  *ngIf="getEstadosDisponibles().length > 0">
+            <h3>Actualizar estado</h3>
+
+            <label for="nuevoEstado">Nuevo estado</label>
+          <select
+   id="nuevoEstado"
+    [(ngModel)]="estadoSeleccionado"
+  >
+
+  <option value="">Seleccione...</option>
+
+  <option
+    *ngFor="let estado of getEstadosDisponibles(); trackBy: trackOptionValue"
+    [value]="estado.value">
+
+    {{ estado.label }}
+
+  </option>
+
+</select>
+            
+            <div *ngIf="estadoSeleccionado === 'ENTREGADA'">
+            <label for="codigoEntrega">Código de entrega</label>
+            <input id="codigoEntrega" [(ngModel)]="codigoEntrega"   type="text" placeholder="Ej. NP-482913" aria-label="Código de entrega" />
+             </div>
+           <button
+  type="button"
+  (click)="actualizarTracking()">
+  Actualizar tracking
+</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,286 @@
+<div class="admin-users-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <span>Gestión de accesos</span>
+
+      <h1>Usuarios</h1>
+
+      <p>
+        Administra clientes y proveedores registrados en la plataforma.
+      </p>
+
+    </div>
+
+    <button
+      class="btn-primary"
+      type="button"
+      (click)="gestionar({ idUsuario: 0, nombreCompleto: 'Nuevo usuario', correo: '', rol: 'CLIENTE', estado: 'ACTIVO' })">
+      + Nuevo usuario
+    </button>
+
+  </div>
+
+  <div class="summary-grid">
+
+    <div class="summary-card">
+
+      <span>Total usuarios</span>
+
+      <strong>
+        {{ getTotalUsuarios() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card">
+
+      <span>Clientes</span>
+
+      <strong>
+        {{ getClientes() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card">
+
+      <span>Proveedores</span>
+
+      <strong>
+        {{ getProveedores() }}
+      </strong>
+
+    </div>
+
+    <div class="summary-card">
+
+      <span>Suspendidos</span>
+
+      <strong>
+        {{ getSuspendidos() }}
+      </strong>
+
+    </div>
+
+  </div>
+
+  <section class="users-card">
+
+    <div class="users-card__header">
+
+      <h2>Listado de usuarios</h2>
+
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Buscar por nombre, correo o rol..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarUsuarios()"
+      />
+
+    </div>
+
+    <div class="users-table">
+
+      <div class="users-table__head">
+
+        <div>Usuario</div>
+
+        <div>Correo</div>
+
+        <div>Rol</div>
+
+        <div>Estado</div>
+
+        <div>Registro</div>
+
+        <div>Acción</div>
+
+      </div>
+
+      <ng-container *ngIf="loading">
+        <div
+          class="users-table__row users-table__row--skeleton"
+          *ngFor="let row of skeletonRows"
+        >
+          <div class="skeleton-line" *ngFor="let item of [1, 2, 3, 4, 5, 6]"></div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!loading">
+        <div
+          class="users-table__row"
+          *ngFor="let user of filteredUsers"
+        >
+
+        <div class="user-cell">
+
+          <div class="avatar">
+
+            {{
+              user?.nombreCompleto?.charAt(0) || '?'
+            }}
+
+          </div>
+
+          <strong>
+
+            {{
+              user?.nombreCompleto
+              || 'Sin nombre'
+            }}
+
+          </strong>
+
+        </div>
+
+        <div>
+
+          {{ user?.correo }}
+
+        </div>
+
+        <div>
+
+          {{ user?.rol }}
+
+        </div>
+
+        <div>
+
+          <span
+            class="status"
+
+            [class.pending]="
+              user?.estado === 'PENDIENTE'
+            "
+
+            [class.suspended]="
+              user?.estado === 'SUSPENDIDO' || user?.estado === 'BLOQUEADO'
+            "
+          >
+
+            {{ user?.estado }}
+
+          </span>
+
+        </div>
+
+        <div>
+
+          {{
+            formatearFecha(
+              user?.fechaRegistro
+            )
+          }}
+
+        </div>
+
+        <div>
+
+          <button class="btn-secondary" (click)="gestionar(user)">
+            Gestionar
+          </button>
+
+        </div>
+
+        </div>
+      </ng-container>
+
+      <div
+        class="empty-state"
+        *ngIf="!loading && filteredUsers.length === 0"
+      >
+
+        No se encontraron usuarios.
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <section
+    class="manage-modal"
+    *ngIf="selectedUser"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admin-user-modal-title">
+    <div class="manage-panel">
+      <div class="manage-panel__header">
+        <div>
+          <span>Gestionar usuario</span>
+          <h2 id="admin-user-modal-title">{{ selectedUser?.nombreCompleto }}</h2>
+        </div>
+        <button type="button" class="btn-secondary" (click)="cerrarGestion()">Cerrar</button>
+      </div>
+
+      <form class="manage-form" (ngSubmit)="guardarGestion()">
+        <label>
+          Nombres
+          <input name="nombres" [(ngModel)]="editForm.nombres" />
+        </label>
+        <label>
+          Apellidos
+          <input name="apellidos" [(ngModel)]="editForm.apellidos" />
+        </label>
+        <label>
+          Correo
+          <input name="correo" type="email" [(ngModel)]="editForm.correo" />
+        </label>
+        <label>
+          Telefono
+          <input name="telefono" [(ngModel)]="editForm.telefono" />
+        </label>
+        <label>
+          WhatsApp
+          <input name="whatsapp" [(ngModel)]="editForm.whatsapp" />
+        </label>
+        <label>
+          Direccion
+          <input name="direccion" [(ngModel)]="editForm.direccion" />
+        </label>
+        <label>
+          Nueva contrasena
+          <input name="password" type="password" [(ngModel)]="editForm.password" placeholder="Dejar vacio para conservar" />
+        </label>
+        <label *ngIf="selectedUser?.idUsuario === 0">
+          Rol
+          <select name="rol" [(ngModel)]="editForm.rol">
+            <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+          </select>
+        </label>
+        <label *ngIf="selectedUser?.idUsuario !== 0">
+          Rol actual
+          <input type="text" [value]="editForm.rol" disabled />
+        </label>
+        <label>
+          Estado
+          <select name="estado" [(ngModel)]="editForm.estado">
+            <option value="ACTIVO">ACTIVO</option>
+            <option value="INACTIVO">INACTIVO</option>
+            <option value="BLOQUEADO">BLOQUEADO</option>
+          </select>
+        </label>
+
+        <p class="manage-error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+        <div class="manage-actions">
+          <button type="button" class="btn-secondary" *ngIf="editForm.estado !== 'ACTIVO'" (click)="activarUsuario()">
+            Quitar de lista negra
+          </button>
+          <button type="button" class="btn-secondary" *ngIf="selectedUser?.idUsuario === 0" (click)="crearNuevoUsuario()" [disabled]="saving">
+            {{ saving ? 'Creando...' : 'Crear usuario con MFA' }}
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="saving" *ngIf="selectedUser?.idUsuario !== 0">
+            {{ saving ? 'Guardando...' : 'Guardar con MFA' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+</div>

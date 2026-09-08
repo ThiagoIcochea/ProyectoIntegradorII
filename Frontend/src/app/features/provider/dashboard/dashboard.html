@@ -1,0 +1,133 @@
+<!-- Backend touchpoint: provider dashboard shows metrics and recent RFQs from the backend. -->
+<div class="provider-dashboard">
+  <div class="page-header">
+    <div>
+      <span>Resumen general</span>
+      <h1>Hola, {{ providerName }}</h1>
+      <p>Aqui tienes el resumen de tu actividad y solicitudes en la plataforma.</p>
+    </div>
+
+    <div class="api-status" [class.api-status--pending]="!apiConnected">
+      {{ apiStatus }}
+    </div>
+
+    <button type="button" class="export-btn" (click)="exportarDashboard()">
+      Exportar informe
+    </button>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card" *ngFor="let metric of metrics">
+      <div class="metric-card__top">
+        <span>{{ metric.title }}</span>
+        <div class="metric-icon">{{ metric.icon }}</div>
+      </div>
+
+      <strong>{{ metric.value }}</strong>
+      <p>{{ metric.change }}</p>
+    </div>
+  </div>
+
+  <section class="analytics-grid">
+    <div class="chart-panel">
+      <div class="chart-panel__header">
+        <h2>Historico de solicitudes</h2>
+        <p>Volumen mensual e ingresos asociados.</p>
+      </div>
+
+      <div class="bar-chart" *ngIf="historyChart.length; else noHistory">
+        <div class="bar-row" *ngFor="let item of historyChart">
+          <span>{{ item.label }}</span>
+          <div class="bar-track">
+            <div class="bar-fill" [style.width.%]="item.width"></div>
+          </div>
+          <strong>{{ item.count }}</strong>
+        </div>
+      </div>
+
+      <ng-template #noHistory>
+        <div class="empty-state">Aun no hay historico suficiente.</div>
+      </ng-template>
+    </div>
+
+    <div class="chart-panel">
+      <div class="chart-panel__header">
+        <h2>Estados operativos</h2>
+        <p>Distribucion actual de solicitudes.</p>
+      </div>
+
+      <div class="bar-chart">
+        <div class="bar-row" *ngFor="let item of statusChart">
+          <span>{{ item.label }}</span>
+          <div class="bar-track">
+            <div class="bar-fill" [style.width.%]="item.width" [style.background]="item.color"></div>
+          </div>
+          <strong>{{ item.count }}</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="insights-panel">
+    <div>
+      <span>Groq AI</span>
+      <h2>Insights para mejorar rendimiento</h2>
+    </div>
+    <p *ngIf="loadingInsights">Analizando métricas...</p>
+    <ol *ngIf="!loadingInsights" class="insights-list">
+      <li *ngFor="let item of insightItems">{{ item }}</li>
+    </ol>
+  </section>
+
+  <section class="requests-card">
+    <div class="requests-card__header">
+      <div>
+        <h2>Solicitudes recientes RFQ</h2>
+        <p>Ultimas solicitudes recibidas desde clientes B2B.</p>
+      </div>
+
+      <a routerLink="/app/provider/requests">Ver todas</a>
+    </div>
+
+    <div class="requests-table">
+      <div class="requests-table__head">
+        <div>ID Solicitud</div>
+        <div>Cliente</div>
+        <div>Cantidad</div>
+        <div>Recepcion</div>
+        <div>Estado</div>
+        <div>Accion</div>
+      </div>
+
+      <div class="requests-table__row" *ngFor="let request of recentRequests">
+        <div class="request-id">{{ request.id }}</div>
+
+        <div>
+          <strong>{{ request.client }}</strong>
+          <span>{{ request.location }}</span>
+        </div>
+
+        <div>{{ request.products }}</div>
+        <div>{{ request.date }}</div>
+
+        <div>
+          <span
+            class="status-badge"
+            [class.warning]="request.status === 'PAGO_PENDIENTE' || request.status === 'PAGO_VALIDANDO'">
+            {{ request.status }}
+          </span>
+        </div>
+
+        <div>
+          <a routerLink="/app/provider/requests" class="action-link">
+            Revisar y cotizar
+          </a>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="recentRequests.length === 0">
+        No hay solicitudes recientes.
+      </div>
+    </div>
+  </section>
+</div>

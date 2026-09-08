@@ -1,0 +1,24 @@
+<!-- Backend touchpoint: this screen routes users to client or provider registration. -->
+<div class="role-page">
+  <div class="role-header">
+    <div class="brand">Nethink</div>
+    <h1>Selecciona tu rol</h1>
+    <p>Elige cómo deseas registrarte dentro de la plataforma.</p>
+  </div>
+
+  <div class="role-grid">
+    <button
+      type="button"
+      class="role-card"
+      *ngFor="let role of roles"
+      [class.is-selected]="selectedRole.route === role.route"
+      (click)="seleccionarRol(role)"
+    >
+      <div class="role-card__icon">{{ role.icon }}</div>
+      <h3>{{ role.title }}</h3>
+      <p>{{ role.description }}</p>
+      <div class="role-card__action" *ngIf="selectedRole.route === role.route">Seleccionado</div>
+      <div class="role-card__action" *ngIf="selectedRole.route !== role.route">Elegir rol</div>
+    </button>
+  </div>
+</div>

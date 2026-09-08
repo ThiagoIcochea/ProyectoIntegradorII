@@ -1,0 +1,81 @@
+:root,
+body.dark-theme {
+  color-scheme: dark;
+  --theme-app: #0b1120;
+  --theme-app-rgb: 11, 17, 32;
+  --theme-app-start: #0f172a;
+  --theme-app-end: #070d18;
+  --theme-surface: #111827;
+  --theme-surface-rgb: 17, 24, 39;
+  --theme-surface-raised: #1e293b;
+  --theme-surface-soft: #162033;
+  --theme-surface-hover: #273449;
+  --theme-control: rgba(55, 65, 81, 0.6);
+  --theme-sidebar: rgba(10, 16, 30, 0.88);
+  --theme-topbar: rgba(10, 16, 30, 0.76);
+  --theme-glass: rgba(255, 255, 255, 0.04);
+  --theme-glass-hover: rgba(255, 255, 255, 0.07);
+  --theme-text: #e5e7eb;
+  --theme-text-bright: #f8fafc;
+  --theme-text-secondary: #9ca3af;
+  --theme-text-secondary-rgb: 156, 163, 175;
+  --theme-text-soft: #cbd5e1;
+  --theme-text-muted-blue: #94a3b8;
+  --theme-text-muted: #7182a8;
+  --theme-border: #374151;
+  --theme-border-soft: #334155;
+  --theme-border-rgb: 55, 65, 81;
+  --theme-accent: #60a5fa;
+  --theme-accent-soft: #93c5fd;
+  --theme-accent-text: #bfdbfe;
+  --theme-success-text: #86efac;
+  --theme-warning-text: #fbbf24;
+  --theme-danger-text: #fca5a5;
+  --theme-info-text: #dbeafe;
+  --theme-shadow: rgba(2, 6, 23, 0.35);
+}
+
+body.light-theme {
+  color-scheme: light;
+  --theme-app: #f3f6fb;
+  --theme-app-rgb: 243, 246, 251;
+  --theme-app-start: #f8fafc;
+  --theme-app-end: #eef2f7;
+  --theme-surface: #ffffff;
+  --theme-surface-rgb: 255, 255, 255;
+  --theme-surface-raised: #ffffff;
+  --theme-surface-soft: #f1f5f9;
+  --theme-surface-hover: #e8eef6;
+  --theme-control: #f8fafc;
+  --theme-sidebar: rgba(255, 255, 255, 0.94);
+  --theme-topbar: rgba(255, 255, 255, 0.9);
+  --theme-glass: rgba(15, 23, 42, 0.035);
+  --theme-glass-hover: rgba(15, 23, 42, 0.075);
+  --theme-text: #172033;
+  --theme-text-bright: #0f172a;
+  --theme-text-secondary: #475569;
+  --theme-text-secondary-rgb: 71, 85, 105;
+  --theme-text-soft: #334155;
+  --theme-text-muted-blue: #64748b;
+  --theme-text-muted: #64748b;
+  --theme-border: #cbd5e1;
+  --theme-border-soft: #d5dde8;
+  --theme-border-rgb: 203, 213, 225;
+  --theme-accent: #2563eb;
+  --theme-accent-soft: #1d4ed8;
+  --theme-accent-text: #1e40af;
+  --theme-success-text: #166534;
+  --theme-warning-text: #92400e;
+  --theme-danger-text: #b91c1c;
+  --theme-info-text: #1e40af;
+  --theme-shadow: rgba(15, 23, 42, 0.12);
+}
+
+body.theme-changing,
+body.theme-changing * {
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease !important;
+}
