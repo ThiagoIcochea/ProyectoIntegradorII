@@ -1,8 +1,40 @@
 {
   "expo": {
-    "name": "Nethink B2B", "slug": "nethink-b2b", "scheme": "nethinkb2b",
-    "version": "1.0.0", "orientation": "portrait", "userInterfaceStyle": "automatic",
-    "plugins": ["expo-router", "expo-secure-store", ["expo-location", {"locationWhenInUsePermission":"Permite a Nethink B2B obtener tu ubicación para la entrega."}], ["expo-speech-recognition", {"microphonePermission":"Permite a Nethink B2B usar el micrófono para recibir comandos de voz.","speechRecognitionPermission":"Permite a Nethink B2B transcribir tus comandos de voz."}]],
-    "experiments": { "typedRoutes": true }
+    "name": "Nethink B2B",
+    "slug": "nethink-b2b",
+    "scheme": "nethinkb2b",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permite a Nethink B2B obtener tu ubicación para la entrega."
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Permite a Nethink B2B usar el micrófono para recibir comandos de voz.",
+          "speechRecognitionPermission": "Permite a Nethink B2B transcribir tus comandos de voz."
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9f26cd1b-c7ce-4806-95cf-cf69278b3f70"
+      }
+    },
+    "android": {
+      "package": "com.nethink.b2b"
+    }
   }
 }
