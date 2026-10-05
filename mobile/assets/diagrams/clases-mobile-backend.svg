@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="980" viewBox="0 0 1500 980">
+  <style>
+    text{font-family:Arial,sans-serif;fill:#17233d}.title{font-size:28px;font-weight:700}.sub{font-size:16px;fill:#52627c}.name{font-size:17px;font-weight:700}.body{font-size:14px}.cls{fill:#fff;stroke:#55729b;stroke-width:2}.line{stroke:#506b91;stroke-width:2;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#506b91"/></marker></defs>
+  <rect width="1500" height="980" fill="#f6f9fe"/>
+  <text x="55" y="55" class="title">Diagrama de clases — Capas principales de Mobile y Backend</text>
+  <text x="55" y="82" class="sub">Relaciones lógicas; no sustituye el modelo entidad-relación completo.</text>
+  <text x="55" y="125" class="name">Mobile</text><text x="830" y="125" class="name">Backend</text>
+
+  <g><rect x="55" y="155" width="270" height="135" class="cls" rx="8"/><path d="M55 195h270" stroke="#55729b"/><text x="75" y="183" class="name">AuthProvider</text><text x="75" y="220" class="body">session: Session | null</text><text x="75" y="244" class="body">signIn() · signOut()</text><text x="75" y="268" class="body">ready: boolean</text></g>
+  <g><rect x="385" y="155" width="330" height="135" class="cls" rx="8"/><path d="M385 195h330" stroke="#55729b"/><text x="405" y="183" class="name">b2bService</text><text x="405" y="220" class="body">products() · myRequests()</text><text x="405" y="244" class="body">providerPayments() · comments()</text><text x="405" y="268" class="body">adminUsers() · providerIndicators()</text></g>
+  <g><rect x="385" y="375" width="330" height="150" class="cls" rx="8"/><path d="M385 415h330" stroke="#55729b"/><text x="405" y="403" class="name">RequestDetailModal</text><text x="405" y="440" class="body">item: Request | PagoResponse</text><text x="405" y="464" class="body">detalles: DetalleSolicitudResponse[]</text><text x="405" y="488" class="body">Muestra precios y condiciones</text></g>
+  <g><rect x="55" y="375" width="270" height="150" class="cls" rx="8"/><path d="M55 415h270" stroke="#55729b"/><text x="75" y="403" class="name">Session</text><text x="75" y="440" class="body">token: string</text><text x="75" y="464" class="body">role: CLIENTE | PROVEEDOR | ADMIN</text><text x="75" y="488" class="body">email · idUsuario</text></g>
+  <path class="line" d="M325 222 L385 222"/><path class="line" d="M550 290 L550 375"/><path class="line" d="M190 290 L190 375"/>
+
+  <g><rect x="830" y="155" width="275" height="135" class="cls" rx="8"/><path d="M830 195h275" stroke="#55729b"/><text x="850" y="183" class="name">SolicitudController</text><text x="850" y="220" class="body">listarMisSolicitudes()</text><text x="850" y="244" class="body">tracking() · pagar()</text><text x="850" y="268" class="body">aprobar() · cancelar()</text></g>
+  <g><rect x="1165" y="155" width="275" height="135" class="cls" rx="8"/><path d="M1165 195h275" stroke="#55729b"/><text x="1185" y="183" class="name">ComentarioController</text><text x="1185" y="220" class="body">crear() · listar()</text><text x="1185" y="244" class="body">reaccionar()</text></g>
+  <g><rect x="830" y="375" width="275" height="150" class="cls" rx="8"/><path d="M830 415h275" stroke="#55729b"/><text x="850" y="403" class="name">SolicitudService</text><text x="850" y="440" class="body">crearSolicitud()</text><text x="850" y="464" class="body">listarMisSolicitudes()</text><text x="850" y="488" class="body">resumirDetalles()</text></g>
+  <g><rect x="1165" y="375" width="275" height="150" class="cls" rx="8"/><path d="M1165 415h275" stroke="#55729b"/><text x="1185" y="403" class="name">ComentarioService</text><text x="1185" y="440" class="body">crearComentario()</text><text x="1185" y="464" class="body">listar() · reaccionar()</text><text x="1185" y="488" class="body">moderación y anti-duplicado</text></g>
+  <g><rect x="830" y="625" width="275" height="170" class="cls" rx="8"/><path d="M830 665h275" stroke="#55729b"/><text x="850" y="653" class="name">Solicitud</text><text x="850" y="690" class="body">idSolicitud · estado · total</text><text x="850" y="714" class="body">usuario · proveedor</text><text x="850" y="738" class="body">detalles: List&lt;DetalleSolicitud&gt;</text><text x="850" y="762" class="body">fechaEntrega · direccionEnvio</text></g>
+  <g><rect x="1165" y="625" width="275" height="170" class="cls" rx="8"/><path d="M1165 665h275" stroke="#55729b"/><text x="1185" y="653" class="name">DetalleSolicitudResponse</text><text x="1185" y="690" class="body">nombreProducto · cantidad</text><text x="1185" y="714" class="body">precioUnitario · descuento</text><text x="1185" y="738" class="body">garantiaMeses</text><text x="1185" y="762" class="body">tiempoEntregaDias</text></g>
+  <path class="line" d="M967 290 L967 375"/><path class="line" d="M1302 290 L1302 375"/><path class="line" d="M967 525 L967 625"/><path class="line" d="M1105 710 L1165 710"/>
+  <path class="line" d="M715 445 L830 445"/><text x="727" y="425" class="sub">REST DTO / JSON</text>
+  <text x="830" y="855" class="sub">Repositorios JPA persisten Solicitud, Pago, Comentario y sus relaciones en MySQL.</text>
+</svg>

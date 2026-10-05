@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="920" viewBox="0 0 1500 920">
+  <style>
+    text{font-family:Arial,sans-serif;fill:#17233d}.title{font-size:28px;font-weight:700}.subtitle{font-size:16px;fill:#52627c}.h{font-size:18px;font-weight:700}.p{font-size:15px}.small{font-size:13px;fill:#52627c}.box{stroke:#55729b;stroke-width:2;rx:16}.arrow{stroke:#506b91;stroke-width:2.5;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#506b91"/></marker></defs>
+  <rect width="1500" height="920" fill="#f6f9fe"/>
+  <text x="60" y="58" class="title">Diagrama de componentes — Nethink B2B Mobile y Backend</text>
+  <text x="60" y="86" class="subtitle">Arquitectura móvil React Native / Expo Router conectada a una API REST Spring Boot</text>
+
+  <rect x="55" y="130" width="545" height="705" class="box" fill="#eaf3ff"/>
+  <text x="82" y="168" class="h">Aplicación móvil (React Native + Expo)</text>
+  <rect x="85" y="200" width="210" height="135" class="box" fill="#fff"/><text x="105" y="232" class="h">Presentación</text><text x="105" y="260" class="p">Expo Router</text><text x="105" y="284" class="p">Pantallas por rol</text><text x="105" y="308" class="small">Cliente · Proveedor · Admin</text>
+  <rect x="350" y="200" width="210" height="135" class="box" fill="#fff"/><text x="370" y="232" class="h">Componentes UI</text><text x="370" y="260" class="p">Cards, formularios</text><text x="370" y="284" class="p">Modales y navegación</text><text x="370" y="308" class="small">Tema y diseño compartido</text>
+  <rect x="85" y="415" width="210" height="150" class="box" fill="#fff"/><text x="105" y="447" class="h">Estado y acceso</text><text x="105" y="475" class="p">AuthProvider</text><text x="105" y="499" class="p">AccessGate</text><text x="105" y="523" class="small">SecureStore · MFA · roles</text>
+  <rect x="350" y="415" width="210" height="150" class="box" fill="#fff"/><text x="370" y="447" class="h">Servicios</text><text x="370" y="475" class="p">Axios API client</text><text x="370" y="499" class="p">b2bService</text><text x="370" y="523" class="small">authService · storage</text>
+  <rect x="85" y="640" width="475" height="145" class="box" fill="#fff"/><text x="105" y="673" class="h">Módulos funcionales</text><text x="105" y="703" class="p">Autenticación · catálogo/RFQ · solicitudes y pagos · entregas y reclamos</text><text x="105" y="731" class="p">Reseñas e indicadores · administración · perfil · asistente de voz</text><text x="105" y="758" class="small">Las vistas comparten servicios, control de acceso, componentes y estilos.</text>
+  <path class="arrow" d="M295 267 L350 267"/><path class="arrow" d="M190 335 L190 415"/><path class="arrow" d="M455 335 L455 415"/><path class="arrow" d="M295 490 L350 490"/>
+
+  <rect x="735" y="130" width="710" height="705" class="box" fill="#eef9f2"/>
+  <text x="762" y="168" class="h">Backend B2B (Spring Boot)</text>
+  <rect x="770" y="205" width="290" height="105" class="box" fill="#fff"/><text x="792" y="237" class="h">API REST / Controllers</text><text x="792" y="265" class="p">Auth, Solicitud, Pago, Proveedor</text><text x="792" y="289" class="small">Comentarios, Seguridad, Configuración</text>
+  <rect x="1120" y="205" width="290" height="105" class="box" fill="#fff"/><text x="1142" y="237" class="h">Seguridad</text><text x="1142" y="265" class="p">JWT Filter + roles</text><text x="1142" y="289" class="small">MFA y control administrativo</text>
+  <rect x="770" y="405" width="290" height="125" class="box" fill="#fff"/><text x="792" y="437" class="h">Servicios de dominio</text><text x="792" y="465" class="p">Solicitudes · pagos · catálogo</text><text x="792" y="489" class="p">reseñas · scoring · notificaciones</text>
+  <rect x="1120" y="405" width="290" height="125" class="box" fill="#fff"/><text x="1142" y="437" class="h">Persistencia</text><text x="1142" y="465" class="p">JPA repositories</text><text x="1142" y="489" class="small">Entidades y DTOs de respuesta</text>
+  <rect x="770" y="640" width="640" height="105" class="box" fill="#fff"/><text x="792" y="672" class="h">Integraciones y datos</text><text x="792" y="700" class="p">MySQL · Cloudinary · correo/MFA · SUNAT · servicios externos de inventario</text><text x="792" y="724" class="small">La API devuelve DTOs con datos congelados de la solicitud y métricas del proveedor.</text>
+  <path class="arrow" d="M1060 257 L1120 257"/><path class="arrow" d="M915 310 L915 405"/><path class="arrow" d="M1265 310 L1265 405"/><path class="arrow" d="M915 530 L915 640"/><path class="arrow" d="M1265 530 L1265 640"/>
+  <path class="arrow" d="M600 490 L770 490"/><text x="624" y="468" class="small">HTTPS · JSON · Bearer JWT</text>
+</svg>

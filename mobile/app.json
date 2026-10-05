@@ -1,9 +1,48 @@
 {
   "expo": {
-    "name": "Nethink B2B", "slug": "nethink-b2b", "icon": "./assets/favicon.svg",
+    "name": "Nethink B2B",
+    "slug": "nethink-b2b",
+    "icon": "./assets/icon.png",
     "scheme": "nethinkb2b",
-    "version": "1.0.0", "orientation": "portrait", "userInterfaceStyle": "automatic",
-    "plugins": ["expo-router", "expo-secure-store", ["expo-location", {"locationWhenInUsePermission":"Permite a Nethink B2B obtener tu ubicación para la entrega."}], ["expo-speech-recognition", {"microphonePermission":"Permite a Nethink B2B usar el micrófono para recibir comandos de voz.","speechRecognitionPermission":"Permite a Nethink B2B transcribir tus comandos de voz."}]],
-    "experiments": { "typedRoutes": true }
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0b1120"
+    },
+    "android": {
+      "package": "com.nethink.b2b",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permite a Nethink B2B obtener tu ubicación para la entrega."
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Permite a Nethink B2B usar el micrófono para recibir comandos de voz.",
+          "speechRecognitionPermission": "Permite a Nethink B2B transcribir tus comandos de voz."
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }
