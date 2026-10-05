@@ -10,6 +10,23 @@ Aplicación móvil Expo/React Native que consume el mismo API REST del proyecto 
 
 Para un teléfono físico, el API local debe usar la IP LAN de la máquina (por ejemplo `http://192.168.1.10:8081/api`), no `localhost`.
 
+## Android Studio
+
+Este proyecto ya incluye la carpeta nativa `android/`, generada con Expo Prebuild, para que Android Studio pueda abrirlo como proyecto Gradle.
+
+1. Abre Android Studio y selecciona `mobile/android`.
+2. En `Settings > Build, Execution, Deployment > Build Tools > Gradle`, usa el Gradle JDK embebido de Android Studio o JDK 21.
+3. Si ejecutas Gradle desde terminal en Windows, evita el Java global 25 y usa el JDK de Android Studio:
+
+```powershell
+$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+.\gradlew.bat assembleDebug
+```
+
+4. Para usar `npm` en PowerShell cuando la politica de ejecucion bloquee `npm.ps1`, ejecuta `npm.cmd`.
+5. Para lanzar en emulador/dispositivo desde Expo usa `npm.cmd run android`. Para ejecutar desde Android Studio en modo debug, deja Metro activo con `npm.cmd start`.
+
 ## Incluido
 
 - Sesión JWT en `expo-secure-store`, con encabezado `Authorization: Bearer TOKEN` centralizado por Axios.
