@@ -1,2 +1,2 @@
-import AdminOperations from '../admin-operations';
+import AdminOperations from '@/app/admin-operations';
 export default function AdminTab(){return <AdminOperations/>;}

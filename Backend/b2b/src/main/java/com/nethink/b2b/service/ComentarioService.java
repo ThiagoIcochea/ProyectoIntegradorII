@@ -43,15 +43,23 @@ public class ComentarioService {
         this.usuarioRepo= usuarioRepo;
     }
 
-    public Comentario crearComentario(
+    public synchronized Comentario crearComentario(
             CrearComentarioRequest request,
             Integer idUsuario
     ) {
 
          ProveedorProducto provProd = proveedorProductoRepo.findByProveedor_IdProveedorAndProducto_IdProducto(request.getIdProv(), request.getIdProd()).orElseThrow( () -> new RuntimeException("Proveedor producto no encontrado"));
+        String texto = request.getComentario() == null ? "" : request.getComentario().trim();
+        if (texto.isBlank()) {
+            throw new RuntimeException("El comentario no puede estar vacío");
+        }
+        if (comentarioRepository.existsByIdProvProdAndIdUsuarioAndComentario(
+                provProd.getIdProvProd(), idUsuario, texto)) {
+            throw new RuntimeException("Esta reseña ya fue publicada");
+        }
         IAComentarioResponse ia =
                 moderacionService.moderar(
-                        request.getComentario()
+                        texto
                 );
 
         if (!"OK".equalsIgnoreCase(
@@ -75,7 +83,7 @@ public class ComentarioService {
         );
 
         comentario.setComentario(
-                request.getComentario()
+                texto
         );
 
         comentario.setFecha(

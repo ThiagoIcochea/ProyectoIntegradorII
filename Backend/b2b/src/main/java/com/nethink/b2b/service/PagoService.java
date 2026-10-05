@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 //se añadio
 import java.util.List; 
+import com.nethink.b2b.dto.response.DetalleSolicitudResponse;
 
 @Service
 public class PagoService {
@@ -223,6 +224,22 @@ public class PagoService {
             
             
             dto.setFechaSolicitud(s.getFechaCreacion()); 
+            dto.setDireccionEnvio(s.getDireccionEnvio());
+            dto.setFechaEntrega(s.getFechaEntrega());
+            dto.setFechaLimiteEntrega(s.getFechaLimiteEntrega());
+            List<DetalleSolicitudResponse> detalles = s.getDetalles().stream().map(d -> {
+                DetalleSolicitudResponse detalle = new DetalleSolicitudResponse();
+                detalle.setCantidad(d.getCantidad());
+                detalle.setPrecioUnitario(d.getPrecioUnitario());
+                detalle.setPorcentajeDescuento(d.getProveedorProducto().getPorcentajeDescuento());
+                detalle.setTiempoEntregaDias(d.getTiempoEntregaDias());
+                detalle.setGarantiaMeses(d.getGarantiaMeses());
+                detalle.setNombreProducto(d.getProveedorProducto().getProducto().getNombre());
+                detalle.setCategoria(d.getProveedorProducto().getProducto().getCategoria().getNombre());
+                detalle.setMarca(d.getProveedorProducto().getProducto().getMarca() == null ? null : d.getProveedorProducto().getProducto().getMarca().getNombre());
+                return detalle;
+            }).toList();
+            dto.setDetalles(detalles);
                 
             
             

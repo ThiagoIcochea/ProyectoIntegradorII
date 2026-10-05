@@ -25,6 +25,8 @@ public class DetalleSolicitudResponse {
     /** Commercial terms frozen when the request was created. */
     private BigDecimal precioUnitario;
     private Double porcentajeDescuento;
+    private Integer tiempoEntregaDias;
+    private Integer garantiaMeses;
 
     public Integer getCantidad() {
         return cantidad;
@@ -68,6 +70,10 @@ public class DetalleSolicitudResponse {
     public void setPrecioUnitario(BigDecimal precioUnitario) { this.precioUnitario = precioUnitario; }
     public Double getPorcentajeDescuento() { return porcentajeDescuento; }
     public void setPorcentajeDescuento(Double porcentajeDescuento) { this.porcentajeDescuento = porcentajeDescuento; }
+    public Integer getTiempoEntregaDias() { return tiempoEntregaDias; }
+    public void setTiempoEntregaDias(Integer tiempoEntregaDias) { this.tiempoEntregaDias = tiempoEntregaDias; }
+    public Integer getGarantiaMeses() { return garantiaMeses; }
+    public void setGarantiaMeses(Integer garantiaMeses) { this.garantiaMeses = garantiaMeses; }
     
     
     

@@ -39,6 +39,12 @@ public interface ComentarioRepository extends JpaRepository<Comentario, Integer>
     List<Comentario> findByIdProvProdOrderByFechaDesc(
             Integer idProvProd
     );
+
+    boolean existsByIdProvProdAndIdUsuarioAndComentario(
+            Integer idProvProd,
+            Integer idUsuario,
+            String comentario
+    );
     
     @Query("""
     SELECT c
