@@ -7,9 +7,10 @@ import { spacing } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/use-themed-styles';
 import { apiError } from '@/services/api';
 import { b2bService } from '@/services/b2b.service';
+import { estadoLabel, normalizeEstado } from '@/utils/solicitud';
 
-const normalize = (value: unknown) => String(value || '').trim().toUpperCase().replace(/\s+/g, '_');
-const label = (value: unknown) => String(value || 'En proceso').replaceAll('_', ' ');
+const normalize = normalizeEstado;
+const label = (value: unknown) => value ? estadoLabel(value) : 'En proceso';
 
 export default function RequestTracking() {
   const { id } = useLocalSearchParams<{ id: string }>(); const styles = useStyles();

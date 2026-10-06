@@ -14,7 +14,7 @@ api.interceptors.response.use(undefined, async (error: any) => {
   if (config && isNetworkError && isGet) {
     config.__retryCount = (config.__retryCount || 0) + 1;
     if (config.__retryCount <= 2) {
-      await new Promise(resolve => setTimeout(resolve, config.__retryCount * 1500));
+      await new Promise(resolve => setTimeout(resolve, config.__retryCount * 1000));
       return api(config);
     }
   }
