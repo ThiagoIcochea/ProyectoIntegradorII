@@ -50,3 +50,24 @@ export function estadoLabel(rawEstado: unknown): string {
   const token = normalizeEstado(rawEstado);
   return LABELS[token] || token.replaceAll('_', ' ');
 }
+
+/**
+ * The deployed backend's order-detail line (DetalleSolicitudResponse) only ever carries
+ * cantidad/nombreProducto/categoria/marca/especificaciones — no price, discount, warranty or
+ * delivery time; those fields simply don't exist on that class. A provider viewing their own
+ * request still has their own product catalog (ProveedorProductoResponse), which does carry
+ * those fields, so match by product name and fill in the provider's *current* catalog terms
+ * instead of leaving it blank. `_catalogoActual` flags which fields came from that fallback so
+ * the UI can label them as current, not the historical frozen price.
+ */
+export function enrichDetallesConCatalogo(detalles: any[], catalogo: any[]): any[] {
+  if (!Array.isArray(detalles) || !detalles.length || !Array.isArray(catalogo) || !catalogo.length) return detalles;
+  return detalles.map(d => {
+    if (d.precioUnitario != null) return d;
+    const name = String(d.nombreProducto || d.producto || '').trim().toLowerCase();
+    if (!name) return d;
+    const match = catalogo.find((p: any) => String(p.nombre || p.producto || '').trim().toLowerCase() === name);
+    if (!match) return d;
+    return { ...d, precioUnitario: match.precio, porcentajeDescuento: d.porcentajeDescuento ?? match.porcentajeDescuento, garantiaMeses: d.garantiaMeses ?? match.garantiaMeses, tiempoEntregaDias: d.tiempoEntregaDias ?? match.tiempoEntregaDias, _catalogoActual: true };
+  });
+}

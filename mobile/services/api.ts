@@ -2,14 +2,18 @@ import axios from 'axios';
 import { storage } from './storage';
 
 export const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'https://proyectoinnovacion.onrender.com/api').replace(/\/$/, '');
-export const api = axios.create({ baseURL: API_URL, timeout: 70000, headers: { Accept: 'application/json' } });
+export const api = axios.create({ baseURL: API_URL, timeout: 30000, headers: { Accept: 'application/json' } });
 api.interceptors.request.use(async config => { const session = await storage.getSession(); if (session?.token) config.headers.Authorization = `Bearer ${session.token}`; return config; });
 /** The free hosting tier sleeps after inactivity and the first request after that can drop the connection
  * before the instance finishes waking up. Retry idempotent GETs a couple of times with backoff instead of
- * surfacing a raw connection failure to the user. */
+ * surfacing a raw connection failure to the user — but never retry a request that already timed out
+ * (ECONNABORTED has no `response` either, so without this check a slow admin query that genuinely takes
+ * the full timeout would get retried twice more on top of it, turning one timeout into several minutes
+ * of an indefinite spinner instead of a single failure). */
 api.interceptors.response.use(undefined, async (error: any) => {
   const config = error?.config;
-  const isNetworkError = !error?.response;
+  const isTimeout = error?.code === 'ECONNABORTED';
+  const isNetworkError = !error?.response && !isTimeout;
   const isGet = !config?.method || config.method.toLowerCase() === 'get';
   if (config && isNetworkError && isGet) {
     config.__retryCount = (config.__retryCount || 0) + 1;
