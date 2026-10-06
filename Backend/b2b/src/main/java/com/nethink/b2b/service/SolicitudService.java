@@ -419,6 +419,8 @@ BigDecimal totalItem =
             detalle.setCantidad(d.getCantidad());
             detalle.setPrecioUnitario(d.getPrecioUnitario());
             detalle.setPorcentajeDescuento(d.getProveedorProducto().getPorcentajeDescuento());
+            detalle.setTiempoEntregaDias(d.getTiempoEntregaDias());
+            detalle.setGarantiaMeses(d.getGarantiaMeses());
             detalle.setNombreProducto(d.getProveedorProducto().getProducto().getNombre());
             detalle.setCategoria(d.getProveedorProducto().getProducto().getCategoria().getNombre());
             detalle.setMarca(d.getProveedorProducto().getProducto().getMarca() == null ? null : d.getProveedorProducto().getProducto().getMarca().getNombre());
@@ -446,6 +448,7 @@ BigDecimal totalItem =
 
         TrackingResponse r =
                 new TrackingResponse();
+        r.setDetalles(resumirDetalles(s));
         r.setEmpresaCompradora(s.getEmpresaCompradora());
 
         r.setIdSolicitud(
@@ -986,6 +989,8 @@ System.err.println("ID PROVEEDOR = " + idProveedor);
             // terms accepted at the time the request was created.
             det.setPrecioUnitario(d.getPrecioUnitario());
             det.setPorcentajeDescuento(d.getProveedorProducto().getPorcentajeDescuento());
+            det.setTiempoEntregaDias(d.getTiempoEntregaDias());
+            det.setGarantiaMeses(d.getGarantiaMeses());
 
             det.setNombreProducto(
                     d.getProveedorProducto()

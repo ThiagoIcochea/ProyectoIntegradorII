@@ -7,6 +7,7 @@ package com.nethink.b2b.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 
@@ -50,6 +51,10 @@ public class PagoResponse {
     private LocalDateTime fechaValidacion; 
 
     private String comprobanteUrl;
+    private String direccionEnvio;
+    private LocalDateTime fechaEntrega;
+    private LocalDateTime fechaLimiteEntrega;
+    private List<DetalleSolicitudResponse> detalles;
 
     // GETTERS Y SETTERS
 
@@ -207,6 +212,15 @@ public String getComprobanteUrl() {
 public void setComprobanteUrl(String comprobanteUrl) {
     this.comprobanteUrl = comprobanteUrl;
 }
+
+public String getDireccionEnvio() { return direccionEnvio; }
+public void setDireccionEnvio(String direccionEnvio) { this.direccionEnvio = direccionEnvio; }
+public LocalDateTime getFechaEntrega() { return fechaEntrega; }
+public void setFechaEntrega(LocalDateTime fechaEntrega) { this.fechaEntrega = fechaEntrega; }
+public LocalDateTime getFechaLimiteEntrega() { return fechaLimiteEntrega; }
+public void setFechaLimiteEntrega(LocalDateTime fechaLimiteEntrega) { this.fechaLimiteEntrega = fechaLimiteEntrega; }
+public List<DetalleSolicitudResponse> getDetalles() { return detalles; }
+public void setDetalles(List<DetalleSolicitudResponse> detalles) { this.detalles = detalles; }
     
     
     

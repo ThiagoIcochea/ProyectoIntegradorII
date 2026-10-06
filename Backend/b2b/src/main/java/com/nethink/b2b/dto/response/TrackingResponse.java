@@ -17,6 +17,7 @@ public class TrackingResponse {
     private LocalDateTime fechaLimiteEntrega;
 
     private List<TrackingStepResponse> timeline;
+    private List<DetalleSolicitudResponse> detalles;
     
     private Integer idProveedor;
     
@@ -103,6 +104,9 @@ public void setIdProveedor(Integer idProveedor) {
     public void setTimeline(List<TrackingStepResponse> timeline) {
         this.timeline = timeline;
     }
+
+    public List<DetalleSolicitudResponse> getDetalles() { return detalles; }
+    public void setDetalles(List<DetalleSolicitudResponse> detalles) { this.detalles = detalles; }
 
     public LocalDateTime getFechaLimiteEntrega() {
         return fechaLimiteEntrega;

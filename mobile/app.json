@@ -2,10 +2,19 @@
   "expo": {
     "name": "Nethink B2B",
     "slug": "nethink-b2b",
+    "icon": "./assets/icon.png",
     "scheme": "nethinkb2b",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0b1120"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -34,7 +43,12 @@
       }
     },
     "android": {
-      "package": "com.nethink.b2b"
+      "package": "com.nethink.b2b",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      }
     }
   }
 }

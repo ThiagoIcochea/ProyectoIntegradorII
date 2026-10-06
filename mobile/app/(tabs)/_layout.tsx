@@ -18,7 +18,7 @@ export default function TabsLayout(){
     <Tabs.Screen name="admin-users" options={{title:'Usuarios',href:admin?undefined:null}}/>
     <Tabs.Screen name="admin-providers" options={{title:'Proveedores',href:admin?undefined:null}}/>
     <Tabs.Screen name="admin-more" options={{title:'Más',href:admin?undefined:null}}/>
-    <Tabs.Screen name="profile" options={{title:'Perfil',href:admin?null:undefined}}/>
+    <Tabs.Screen name="profile" options={{title:'Perfil',href:undefined}}/>
     <Tabs.Screen name="provider-claims" options={{href:null}}/><Tabs.Screen name="provider-deliveries" options={{href:null}}/><Tabs.Screen name="provider-payments" options={{href:null}}/><Tabs.Screen name="provider-products" options={{href:null}}/><Tabs.Screen name="provider-api" options={{href:null}}/>
   </Tabs>;
 }
