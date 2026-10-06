@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Button, Card, EmptyState, Input, Loading } from '@/components/ui';
 import { spacing } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/use-themed-styles';
@@ -11,12 +11,14 @@ import { storage } from '@/services/storage';
 
 type CartItem = { idProducto:number; name:string; detail:string; qty:number; precioReferencia?:number|null; categoria?:string; marca?:string };
 export default function Catalog() {
+  const {search:searchParam}=useLocalSearchParams<{search?:string}>();
   const [products,setProducts]=useState<Product[]>([]),[cart,setCart]=useState<CartItem[]>([]),[filters,setFilters]=useState<any>({categorias:[],marcas:[]});
   const [categories,setCategories]=useState<number[]>([]),[brands,setBrands]=useState<number[]>([]),[priceMin,setPriceMin]=useState(''),[priceMax,setPriceMax]=useState(''),[search,setSearch]=useState('');
   const [priority,setPriority]=useState<'BALANCEADO'|'PRECIO'|'TIEMPO'>('BALANCEADO'),[showFilters,setShowFilters]=useState(false),[showCart,setShowCart]=useState(false),[loading,setLoading]=useState(true),[matching,setMatching]=useState(false);
   const s=useStyles();
   const load=useCallback(async()=>{setLoading(true);try{const [catalog,available,saved]=await Promise.all([b2bService.catalog({categorias:categories.length?categories:null,marcas:brands.length?brands:null,precioMin:priceMin?Number(priceMin):null,precioMax:priceMax?Number(priceMax):null,especificaciones:[]}),b2bService.productFilters(),storage.getCart<CartItem>()]);setProducts(catalog||[]);setFilters(available||{categorias:[],marcas:[]});setCart(saved||[]);}catch(e){Alert.alert('No se pudo cargar el catalogo',apiError(e));}finally{setLoading(false);}},[categories,brands,priceMin,priceMax]);
   useEffect(()=>{void load();},[load]);
+  useEffect(()=>{if(typeof searchParam==='string'&&searchParam)setSearch(searchParam);},[searchParam]);
   const visible=products.filter(p=>[p.producto,p.nombre,p.marca,p.categoria,p.descripcion].filter(Boolean).join(' ').toLowerCase().includes(search.trim().toLowerCase()));
   const toggle=(id:number,source:number[],update:(value:number[])=>void)=>update(source.includes(id)?source.filter(x=>x!==id):[...source,id]);
   const saveCart=async(next:CartItem[])=>{setCart(next);await storage.setCart(next);};

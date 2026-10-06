@@ -2,10 +2,23 @@ import { Linking, Modal, ScrollView, StyleSheet, Text, View } from 'react-native
 import { Button, Card } from '@/components/ui';
 import { useThemedStyles } from '@/hooks/use-themed-styles';
 import { spacing } from '@/constants/theme';
+import { estadoLabel } from '@/utils/solicitud';
 
 const money=(value:any)=>value==null?'-':`S/ ${Number(value).toFixed(2)}`;
 const date=(value:any)=>value?new Date(value).toLocaleString('es-PE'):'No disponible';
-const subtotal=(detail:any)=>detail?.subtotal??Number(detail?.cantidad||0)*Number(detail?.precioUnitario??detail?.precio??0)*(1-Number(detail?.porcentajeDescuento??detail?.descuento??0)/100);
+/** Only some backend endpoints send pricing on a detail line (the provider's own request
+ * listing does; the client's mis-solicitudes/tracking/historial don't send a detail at all,
+ * and where it is sent it may still lack precioUnitario/porcentajeDescuento/garantiaMeses).
+ * Defaulting a genuinely missing value to 0 reads as "free"/"no discount"/"no warranty" and
+ * contradicts the real total shown elsewhere — show "No disponible" instead. */
+const valueOrNA=(value:any,unit:string='')=>value==null?'No disponible':`${value}${unit}`;
+const subtotal=(detail:any)=>{
+  if(detail?.subtotal!=null)return detail.subtotal;
+  const price=detail?.precioUnitario??detail?.precio;
+  if(price==null)return null;
+  const discount=Number(detail?.porcentajeDescuento??detail?.descuento??0);
+  return Number(detail?.cantidad||0)*Number(price)*(1-discount/100);
+};
 const estimatedDelivery=(item:any,details:any[])=>{
   const explicit=item?.fechaEntrega||item?.fechaLimiteEntrega||item?.fechaEntregaEstimada||item?.fechaPrometida;
   if(explicit)return explicit;
@@ -21,10 +34,10 @@ export function RequestDetailModal({item,visible,onClose,isClient=false}:{item:a
   const reception=item?.codigoEntrega||item?.codigoRecepcion||item?.codigoEntregaCliente; const delivery=estimatedDelivery(item,details);
   return <Modal visible={visible} animationType="slide" onRequestClose={onClose}><ScrollView style={styles.root} contentContainerStyle={styles.content}>
     <View style={styles.head}><Text style={styles.title}>Detalle de solicitud</Text><Button title="Cerrar" variant="secondary" onPress={onClose}/></View>
-    <Card><Text style={styles.name}>{item?.nombreProveedor||item?.proveedor||item?.nombreCliente||item?.nombreEmpresa||`Solicitud #${item?.idSolicitud||item?.id||''}`}</Text><Text style={styles.text}>Estado: {String(item?.estado||item?.estadoPago||'-').replaceAll('_',' ')}</Text><Text style={styles.text}>Creada: {date(item?.fechaCreacion||item?.fechaSolicitud)}</Text><Text style={styles.text}>Entrega aproximada: {date(delivery)}</Text><Text style={styles.text}>Dirección: {item?.direccionEnvio||item?.direccion||item?.direccionEntrega||'No disponible'}</Text><Text style={styles.text}>Contacto: {item?.nombreCliente||item?.nombreContacto||'-'} {item?.telefonoCliente||item?.telefono||item?.telefonoContacto||''}</Text>{isClient&&reception?<Text style={styles.code}>Código de recepción: {reception}</Text>:null}{item?.comprobanteUrl?<Button title="Ver comprobante" variant="secondary" onPress={()=>void Linking.openURL(item.comprobanteUrl)}/>:null}</Card>
+    <Card><Text style={styles.name}>{item?.nombreProveedor||item?.proveedor||item?.nombreCliente||item?.nombreEmpresa||`Solicitud #${item?.idSolicitud||item?.id||''}`}</Text><Text style={styles.text}>Estado: {item?.estado?estadoLabel(item.estado):String(item?.estadoPago||'-').replaceAll('_',' ')}</Text><Text style={styles.text}>Creada: {date(item?.fechaCreacion||item?.fechaSolicitud)}</Text><Text style={styles.text}>Entrega aproximada: {date(delivery)}</Text><Text style={styles.text}>Dirección: {item?.direccionEnvio||item?.direccion||item?.direccionEntrega||'No disponible'}</Text>{!isClient?<Text style={styles.text}>Contacto: {item?.nombreCliente||item?.nombreContacto||'-'} {item?.telefonoCliente||item?.telefono||item?.telefonoContacto||''}</Text>:null}{isClient&&reception?<Text style={styles.code}>Código de recepción: {reception}</Text>:null}{item?.comprobanteUrl?<Button title="Ver comprobante" variant="secondary" onPress={()=>void Linking.openURL(item.comprobanteUrl)}/>:null}</Card>
     <Text style={styles.section}>Productos y condiciones</Text>
-    {details.length?details.map((detail:any,index:number)=><Card key={`${detail.idDetalle||detail.idProducto||detail.nombreProducto||'producto'}-${index}`}><Text style={styles.name}>{detail.nombreProducto||detail.producto||'Producto'}</Text><Text style={styles.text}>Cantidad: {detail.cantidad??'-'} · Precio unitario: {money(detail.precioUnitario??detail.precio)}</Text><Text style={styles.text}>Categoría: {detail.categoria||'-'} · Marca: {detail.marca||'-'}</Text><Text style={styles.text}>Descuento: {detail.porcentajeDescuento??detail.descuento??0}% · Garantía: {detail.garantiaMeses??0} meses</Text><Text style={styles.text}>Entrega del ítem: {detail.tiempoEntregaDias??'-'} días · Subtotal: {money(subtotal(detail))}</Text></Card>):<Card><Text style={styles.text}>El servicio no incluyó el detalle de productos para este registro.</Text></Card>}
+    {details.length?details.map((detail:any,index:number)=><Card key={`${detail.idDetalle||detail.idProducto||detail.nombreProducto||'producto'}-${index}`}><Text style={styles.name}>{detail.nombreProducto||detail.producto||'Producto'}</Text><Text style={styles.text}>Cantidad: {detail.cantidad??'-'} · Precio unitario: {money(detail.precioUnitario??detail.precio)}</Text><Text style={styles.text}>Categoría: {detail.categoria||'-'} · Marca: {detail.marca||'-'}</Text><Text style={styles.text}>Descuento: {valueOrNA(detail.porcentajeDescuento??detail.descuento,'%')} · Garantía: {valueOrNA(detail.garantiaMeses,' meses')}</Text><Text style={styles.text}>Entrega del ítem: {detail.tiempoEntregaDias??'-'} días · Subtotal: {money(subtotal(detail))}</Text>{detail._catalogoActual?<Text style={styles.hint}>Precio, descuento y garantía mostrados son los vigentes en el catálogo (el pedido no guardó estos datos al crearse).</Text>:null}</Card>):<Card><Text style={styles.text}>{isClient?'El servicio no guarda el detalle de productos para las solicitudes propias del cliente; el total y el estado sí son los reales.':'El servicio no incluyó el detalle de productos para este registro.'}</Text></Card>}
     <Card><Text style={styles.total}>Total: {money(item?.total??item?.totalSolicitud??item?.monto)}</Text></Card>
   </ScrollView></Modal>;
 }
-const useStyles=()=>useThemedStyles(c=>StyleSheet.create({root:{flex:1,backgroundColor:c.bg},content:{padding:spacing.md,gap:12},head:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10},title:{fontSize:23,fontWeight:'800',color:c.text},section:{fontSize:17,fontWeight:'800',color:c.text},name:{fontWeight:'800',fontSize:16,color:c.text},text:{color:c.muted,lineHeight:21},code:{fontWeight:'800',color:c.accentText},total:{fontSize:18,fontWeight:'800',color:c.accentText}}));
+const useStyles=()=>useThemedStyles(c=>StyleSheet.create({root:{flex:1,backgroundColor:c.bg},content:{padding:spacing.md,gap:12},head:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10},title:{fontSize:23,fontWeight:'800',color:c.text},section:{fontSize:17,fontWeight:'800',color:c.text},name:{fontWeight:'800',fontSize:16,color:c.text},text:{color:c.muted,lineHeight:21},code:{fontWeight:'800',color:c.accentText},total:{fontSize:18,fontWeight:'800',color:c.accentText},hint:{color:c.muted,fontSize:11,fontStyle:'italic'}}));
