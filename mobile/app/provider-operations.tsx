@@ -22,9 +22,10 @@ const nextDelivery=(x:any)=>({PAGADA:'EN_PREPARACION',EN_PREPARACION:'EN_CAMINO'
 const nextClaim=(x:any)=>normal(x?.estado)==='ABIERTO'?['EN_REVISION']:normal(x?.estado)==='EN_REVISION'?['RESUELTO','RECHAZADO']:[];
 const proof=(x:any)=>x?.evidenciaUrl||x?.evidencia_url||x?.adjuntoUrl||x?.archivoUrl;
 /** The backend compares the entered code against the stored one with a plain, case-sensitive
- * .equals() — no trimming. Strip whitespace/dashes and uppercase defensively so a code copied
- * from an SMS (which may add a separator the stored value never had) still matches. */
-const normalizeCode=(v:string)=>v.trim().toUpperCase().replace(/[\s-]/g,'');
+ * .equals() — no trimming. Only trim outer whitespace and uppercase: confirmed live against real
+ * stored codes (e.g. "REC-363158") that the dash is part of the actual value, not SMS formatting
+ * noise — stripping it (as a previous version of this helper did) breaks otherwise-correct codes. */
+const normalizeCode=(v:string)=>v.trim().toUpperCase().replace(/\s/g,'');
 
 export default function ProviderOperations({initialSection='plans'}:{initialSection?:Section}){
   const {session}=useAuth();const styles=useStyles();const[section]=useState<Section>(initialSection);const[items,setItems]=useState<any[]>([]);const[loading,setLoading]=useState(true);const[selected,setSelected]=useState<any>(null);

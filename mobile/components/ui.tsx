@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { spacing } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/use-themed-styles';
 
-export function Button({ title, onPress, loading, variant = 'primary', disabled }: { title: string; onPress: () => void; loading?: boolean; variant?: 'primary' | 'secondary' | 'danger'; disabled?: boolean }) { const theme = useStyles(); return <Pressable accessibilityRole="button" disabled={disabled || loading} onPress={onPress} style={[theme.button, variant === 'secondary' && theme.secondary, variant === 'danger' && theme.danger, (disabled || loading) && theme.disabled]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={[theme.buttonText, variant === 'secondary' && theme.secondaryText]}>{title}</Text>}</Pressable>; }
+export function Button({ title, onPress, loading, variant = 'primary', disabled, style }: { title: string; onPress: () => void; loading?: boolean; variant?: 'primary' | 'secondary' | 'danger'; disabled?: boolean; style?: ViewStyle }) { const theme = useStyles(); return <Pressable accessibilityRole="button" disabled={disabled || loading} onPress={onPress} style={[theme.button, variant === 'secondary' && theme.secondary, variant === 'danger' && theme.danger, (disabled || loading) && theme.disabled, style]}>{loading ? <ActivityIndicator color="#fff" /> : <Text style={[theme.buttonText, variant === 'secondary' && theme.secondaryText]}>{title}</Text>}</Pressable>; }
 export function Input({ label, error, secureTextEntry, ...props }: TextInputProps & { label: string; error?: string }) {
   const theme = useStyles();
   const [visible, setVisible] = useState(false);
