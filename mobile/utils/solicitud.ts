@@ -55,10 +55,12 @@ export function estadoLabel(rawEstado: unknown): string {
  * The deployed backend's order-detail line (DetalleSolicitudResponse) only ever carries
  * cantidad/nombreProducto/categoria/marca/especificaciones — no price, discount, warranty or
  * delivery time; those fields simply don't exist on that class. A provider viewing their own
- * request still has their own product catalog (ProveedorProductoResponse), which does carry
- * those fields, so match by product name and fill in the provider's *current* catalog terms
+ * request still has their own product catalog (ProveedorProductoResponse, field `precio`), and a
+ * client can fall back to the general marketplace catalog (CatalogoResponse, field
+ * `precioUnitario`) — match by product name and fill in whichever catalog's *current* terms
  * instead of leaving it blank. `_catalogoActual` flags which fields came from that fallback so
- * the UI can label them as current, not the historical frozen price.
+ * the UI can label them as current, not the historical frozen price (and, for the client's
+ * general-catalog case, not guaranteed to be the exact same provider's price).
  */
 export function enrichDetallesConCatalogo(detalles: any[], catalogo: any[]): any[] {
   if (!Array.isArray(detalles) || !detalles.length || !Array.isArray(catalogo) || !catalogo.length) return detalles;
@@ -68,6 +70,6 @@ export function enrichDetallesConCatalogo(detalles: any[], catalogo: any[]): any
     if (!name) return d;
     const match = catalogo.find((p: any) => String(p.nombre || p.producto || '').trim().toLowerCase() === name);
     if (!match) return d;
-    return { ...d, precioUnitario: match.precio, porcentajeDescuento: d.porcentajeDescuento ?? match.porcentajeDescuento, garantiaMeses: d.garantiaMeses ?? match.garantiaMeses, tiempoEntregaDias: d.tiempoEntregaDias ?? match.tiempoEntregaDias, _catalogoActual: true };
+    return { ...d, precioUnitario: match.precio ?? match.precioUnitario, porcentajeDescuento: d.porcentajeDescuento ?? match.porcentajeDescuento, garantiaMeses: d.garantiaMeses ?? match.garantiaMeses, tiempoEntregaDias: d.tiempoEntregaDias ?? match.tiempoEntregaDias, _catalogoActual: true };
   });
 }
