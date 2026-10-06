@@ -7,7 +7,7 @@ import { paletteFor } from '@/constants/theme';
 export default function TabsLayout(){
   const {session}=useAuth(); const {theme}=useTheme(); const c=paletteFor(theme);
   const client=session?.role==='CLIENTE'; const provider=session?.role==='PROVEEDOR'; const admin=session?.role==='ADMIN';
-  const icon:Record<string,any>={index:'home-outline',catalog:'storefront-outline',requests:'clipboard-outline',history:'time-outline',profile:'person-outline',more:'ellipsis-horizontal-circle-outline'};
+  const icon:Record<string,any>={index:'home-outline',catalog:'storefront-outline',requests:'clipboard-outline',history:'time-outline',profile:'person-outline',more:'ellipsis-horizontal-circle-outline',admin:'speedometer-outline','admin-users':'people-outline','admin-providers':'business-outline','admin-more':'grid-outline'};
   return <Tabs screenOptions={({route})=>({headerStyle:{backgroundColor:c.navy},headerTintColor:'#fff',headerTitleStyle:{fontWeight:'800'},tabBarStyle:{backgroundColor:c.surfaceRaised,borderTopColor:c.border},tabBarActiveTintColor:c.accent,tabBarInactiveTintColor:c.muted,sceneStyle:{backgroundColor:c.bg},tabBarIcon:({color,size})=><Ionicons name={icon[route.name]||'grid-outline'} size={size} color={color}/>})}>
     <Tabs.Screen name="index" options={{title:provider?'Inicio proveedor':session?.role==='ADMIN'?'Panel administrador':'Inicio'}}/>
     <Tabs.Screen name="catalog" options={{title:'Catálogo',href:client?undefined:null}}/>
