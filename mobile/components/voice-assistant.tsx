@@ -10,10 +10,17 @@ let recognition: Recognition | null = null;
 // development/production builds use the real native recognizer declared in app.json.
 if (Constants.executionEnvironment !== 'storeClient') { try { recognition = require('expo-speech-recognition').ExpoSpeechRecognitionModule as Recognition; } catch { recognition = null; } }
 const normalize=(v:string)=>v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); const requestId=(v:string)=>Number(v.match(/(?:rfq|solicitud|pedido|numero)?\s*(\d{1,6})/i)?.[1]||0);
-/** The backend's voice assistant suggests routes without knowing mobile's per-role access rules
- * (e.g. it sent a provider to the client-only catalog for "muéstrame los productos"). Mirrors the
- * same route classification AccessGate (app/_layout.tsx) already enforces, so a disallowed
- * suggestion gets rejected with a clear message instead of bouncing through a screen it can't use. */
+/** The backend's voice assistant (VoiceAssistantService prompt) only ever suggests routes from
+ * one fixed, enumerated list, and it's written in the *web* app's path format
+ * (/app/provider/..., /app/admin/...) — none of which exist in mobile's Expo Router structure.
+ * Navigating to those directly is exactly the "mismatch, route not found" a provider saw asking
+ * for "muéstrame los productos". Translate the known list explicitly instead of guessing by
+ * substring; anything outside it (or the wrong role for it) falls back to that role's home. */
+const ROUTE_MAP: Record<string,string> = {
+  '/app/dashboard':'/(tabs)', '/app/rfq/catalog':'/(tabs)/catalog', '/app/requests':'/(tabs)/requests', '/app/history':'/history', '/app/profile':'/(tabs)/profile',
+  '/app/provider/dashboard':'/(tabs)', '/app/provider/requests':'/(tabs)/requests', '/app/provider/payments':'/(tabs)/provider-payments', '/app/provider/deliveries':'/(tabs)/provider-deliveries', '/app/provider/claims':'/(tabs)/provider-claims', '/app/provider/products':'/(tabs)/provider-products', '/app/provider/api-settings':'/(tabs)/provider-api', '/app/provider/profile':'/(tabs)/profile',
+  '/app/admin/dashboard':'/(tabs)', '/app/admin/users':'/(tabs)/admin-users', '/app/admin/providers':'/(tabs)/admin-providers', '/app/admin/rfqs':'/(tabs)/requests', '/app/admin/products':'/(tabs)/admin-products', '/app/admin/logs':'/(tabs)/admin-logs',
+};
 const isRouteAllowedForRole=(role:string|undefined,route:string):boolean=>{
   const r=route.toLowerCase();
   const clientOnly=r.includes('catalog')||r.includes('rfq-')||r.includes('quotation')||r.includes('history')||r.includes('request/')||r.includes('evaluate/')||r.includes('payment')||r.includes('reviews')||r.includes('top-providers');
@@ -24,6 +31,7 @@ const isRouteAllowedForRole=(role:string|undefined,route:string):boolean=>{
   if(adminOnly)return role==='ADMIN';
   return true;
 };
+const roleHome = () => '/(tabs)' as const;
 export function VoiceAssistant(){const {session,signOut}=useAuth();const path=usePathname();const [listening,setListening]=useState(false);const [thinking,setThinking]=useState(false);const [message,setMessage]=useState(recognition?'Toca el micrófono y di un comando.':'La voz requiere una development build.');const [pending,setPending]=useState(false);
   const statusOpacity=useRef(new Animated.Value(1)).current;const fadeTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const showStatus=useCallback(()=>{if(fadeTimer.current){clearTimeout(fadeTimer.current);fadeTimer.current=null;}statusOpacity.stopAnimation();statusOpacity.setValue(1);},[statusOpacity]);
@@ -49,7 +57,7 @@ export function VoiceAssistant(){const {session,signOut}=useAuth();const path=us
     if(/(cerrar sesion|salir de mi cuenta|logout)/.test(text)){await signOut();say('Sesión cerrada.');return;}
     const searchMatch=text.match(/^(?:busca|buscar|buscame|encuentra|encontrar)\s+(.+)/);
     if(searchMatch&&session?.role==='CLIENTE'){const query=searchMatch[1].replace(/\b(producto|productos|en el catalogo|en catalogo|por favor)\b/g,'').trim();if(query){say(`Buscando ${query} en el catálogo.`);navigate(`/(tabs)/catalog?search=${encodeURIComponent(query)}`);return;}}
-    setThinking(true);try{const answer=await b2bService.voiceAssistant(raw,path);let reply=String(answer.answer||'No pude interpretar ese comando.');if(answer.action==='NAVIGATE'&&typeof answer.route==='string'){if(isRouteAllowedForRole(session?.role,answer.route))navigate(answer.route);else reply='No tienes acceso a esa sección con tu rol actual.';}else if(answer.action==='SEARCH'&&typeof answer.search==='string'&&answer.search.trim()){if(session?.role==='CLIENTE')navigate(`/(tabs)/catalog?search=${encodeURIComponent(answer.search.trim())}`);}say(reply);}catch(error){say(apiError(error,'No pude procesar el comando de voz.'));}finally{setThinking(false);}},[navigate,path,pending,say,session?.role,signOut]);
+    setThinking(true);try{const answer=await b2bService.voiceAssistant(raw,path);let reply=String(answer.answer||'No pude interpretar ese comando.');if(answer.action==='NAVIGATE'&&typeof answer.route==='string'){const mapped=ROUTE_MAP[answer.route.trim()];if(!mapped){navigate(roleHome());reply='No encontré esa sección en la app. Te muestro el inicio.';}else if(!isRouteAllowedForRole(session?.role,mapped)){navigate(roleHome());reply='No tienes acceso a esa sección con tu rol actual. Te muestro el inicio.';}else{navigate(mapped);}}else if(answer.action==='SEARCH'&&typeof answer.search==='string'&&answer.search.trim()){if(session?.role==='CLIENTE')navigate(`/(tabs)/catalog?search=${encodeURIComponent(answer.search.trim())}`);}say(reply);}catch(error){say(apiError(error,'No pude procesar el comando de voz.'));}finally{setThinking(false);}},[navigate,path,pending,say,session?.role,signOut]);
   useEffect(()=>{if(!recognition)return;const start=recognition.addListener('start',()=>{setListening(true);showStatus();setMessage('Escuchando…');});const end=recognition.addListener('end',()=>setListening(false));const result=recognition.addListener('result',event=>{const transcript=event.results?.[0]?.transcript;if(transcript)void handleText(transcript);});const error=recognition.addListener('error',event=>{setListening(false);if(event.error!=='aborted')say(event.error==='not-allowed'?'Necesito permiso de micrófono y reconocimiento de voz.':'No pude escuchar bien. Intenta nuevamente.');});return()=>{start.remove();end.remove();result.remove();error.remove();};},[handleText,say,showStatus]);
   const toggle=async()=>{if(!recognition){Alert.alert('Development build requerida','Expo Go no incluye reconocimiento de voz nativo. Abre una development build para usar el micrófono.');return;}if(listening){recognition.stop();return;}if(!recognition.isRecognitionAvailable()){Alert.alert('Reconocimiento no disponible','Activa el reconocimiento de voz del dispositivo e inténtalo nuevamente.');return;}const permission=await recognition.requestPermissionsAsync();if(!permission.granted){say('Necesito permiso de micrófono y reconocimiento de voz para continuar.');return;}recognition.start({lang:'es-PE',interimResults:false,continuous:false,androidIntentOptions:{EXTRA_LANGUAGE_MODEL:'web_search'}});};
   const styles=useStyles();
