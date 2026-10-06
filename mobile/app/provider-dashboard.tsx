@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button, Card, Loading } from '@/components/ui';
 import { spacing } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/use-themed-styles';
@@ -78,14 +78,16 @@ export default function ProviderDashboard() {
   const [insightItems, setInsightItems] = useState<string[]>([]);
   const [loadingInsights, setLoadingInsights] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const loadedOnce = useRef(false);
 
   const load = useCallback(async () => {
-    setLoading(true); setLoadError(null);
+    if (!loadedOnce.current) setLoading(true);
+    setLoadError(null);
     try {
       const sub = session?.idUsuario ? await b2bService.subscriptionStatus(Number(session.idUsuario)) : null;
       setSubscription(sub);
       const hasDashboard = Number((sub as any)?.idPlan) === 3 && !(sub as any)?.bloqueado;
-      if (!hasDashboard) { setLoading(false); return; }
+      if (!hasDashboard) { setLoading(false); loadedOnce.current = true; return; }
 
       const [requestsRaw, apiConfig, claimsRaw] = await Promise.all([
         b2bService.providerRequests().catch(() => []),
@@ -99,7 +101,7 @@ export default function ProviderDashboard() {
       const pending = requests.filter((r: any) => PENDING.includes(normalizeEstado(r?.estado)));
       const rejected = requests.filter((r: any) => REJECTED.includes(normalizeEstado(r?.estado)));
       const estimatedIncome = approved.reduce((sum: number, r: any) => sum + Number(r?.total || 0), 0);
-      const connected = ['OK', 'ACTIVO'].includes(String((apiConfig as any)?.estado || '').toUpperCase());
+      const connected = String((apiConfig as any)?.estadoConexion || '').toUpperCase() === 'OK';
 
       setProviderName((requests[0] as any)?.nombreProveedor || session?.email?.split('@')[0] || 'proveedor');
       setApiConnected(connected);
@@ -125,6 +127,7 @@ export default function ProviderDashboard() {
       })));
 
       setLoading(false);
+      loadedOnce.current = true;
       setLoadingInsights(true);
       try {
         const res: any = await b2bService.providerInsights({
@@ -150,10 +153,11 @@ export default function ProviderDashboard() {
     } catch (e) {
       setLoadError(apiError(e));
       setLoading(false);
+      loadedOnce.current = true;
     }
   }, [session?.idUsuario, session?.email]);
 
-  useEffect(() => { void load(); }, [load]);
+  useFocusEffect(useCallback(() => { void load(); }, [load]));
 
   if (loading) return <Loading />;
 
@@ -206,9 +210,11 @@ export default function ProviderDashboard() {
         <Text style={styles.copy}>Volumen mensual e ingresos asociados.</Text>
         {historyChart.length ? historyChart.map(item => (
           <View key={item.label} style={styles.barRow}>
-            <Text style={styles.barLabel}>{item.label}</Text>
+            <View style={styles.barRowTop}>
+              <Text style={styles.barLabel} numberOfLines={1}>{item.label}</Text>
+              <Text style={styles.barCount}>{item.count}</Text>
+            </View>
             <View style={styles.barTrack}><View style={[styles.barFill, { width: `${item.width}%` as any }]} /></View>
-            <Text style={styles.barCount}>{item.count}</Text>
           </View>
         )) : <Text style={styles.copy}>Aún no hay histórico suficiente.</Text>}
       </Card>
@@ -218,9 +224,11 @@ export default function ProviderDashboard() {
         <Text style={styles.copy}>Distribución actual de solicitudes.</Text>
         {statusChart.map(item => (
           <View key={item.token} style={styles.barRow}>
-            <Text style={styles.barLabel}>{item.label}</Text>
+            <View style={styles.barRowTop}>
+              <Text style={styles.barLabel} numberOfLines={1}>{item.label}</Text>
+              <Text style={styles.barCount}>{item.count}</Text>
+            </View>
             <View style={styles.barTrack}><View style={[styles.barFill, { width: `${item.width}%` as any, backgroundColor: item.color }]} /></View>
-            <Text style={styles.barCount}>{item.count}</Text>
           </View>
         ))}
       </Card>
@@ -234,7 +242,7 @@ export default function ProviderDashboard() {
 
       <Card>
         <View style={styles.rowBetween}>
-          <Text style={styles.cardTitle}>Solicitudes recientes RFQ</Text>
+          <Text style={[styles.cardTitle, styles.shrinkText]}>Solicitudes recientes RFQ</Text>
           <Button title="Ver todas" variant="secondary" onPress={() => router.push('/(tabs)/requests')} />
         </View>
         {recentRequests.length ? recentRequests.map(r => (
@@ -243,7 +251,7 @@ export default function ProviderDashboard() {
             <Text style={styles.copy}>{r.client} · {r.products}</Text>
             <Text style={styles.copy}>{r.location}</Text>
             <View style={styles.rowBetween}>
-              <Text style={[styles.statusBadge, { color: STATUS_COLORS[r.statusToken] || '#3b82f6' }]}>{r.status}</Text>
+              <Text style={[styles.statusBadge, styles.shrinkText, { color: STATUS_COLORS[r.statusToken] || '#3b82f6' }]} numberOfLines={1}>{r.status}</Text>
               <Text style={styles.copy}>{r.date}</Text>
             </View>
           </View>
@@ -262,21 +270,23 @@ const useStyles = () => useThemedStyles(c => StyleSheet.create({
   cardTitle: { fontSize: 18, fontWeight: '800', color: c.text },
   eyebrow: { color: c.muted, fontWeight: '700', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
   headerRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: spacing.sm },
-  apiChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.success },
+  apiChip: { flexShrink: 0, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.success },
   apiChipPending: { borderColor: c.warning },
   apiChipText: { fontSize: 12, fontWeight: '700', color: c.text },
-  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  metricCard: { flexGrow: 1, flexBasis: '47%', gap: 4 },
+  metricsGrid: { gap: spacing.sm },
+  metricCard: { gap: 4 },
   metricLabel: { color: c.muted, fontSize: 13, fontWeight: '600' },
   metricValue: { fontSize: 24, fontWeight: '800', color: c.text },
   metricChange: { color: c.muted, fontSize: 12 },
-  barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 8 },
-  barLabel: { width: 70, fontSize: 12, color: c.muted },
-  barTrack: { flex: 1, height: 10, borderRadius: 999, backgroundColor: c.surfaceSoft, overflow: 'hidden' },
+  barRow: { marginTop: 10 },
+  barRowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm, marginBottom: 5 },
+  barLabel: { flexShrink: 1, fontSize: 12, color: c.muted },
+  barTrack: { height: 10, borderRadius: 999, backgroundColor: c.surfaceSoft, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 999, backgroundColor: c.primary },
-  barCount: { width: 28, textAlign: 'right', fontSize: 12, fontWeight: '700', color: c.text },
+  barCount: { fontSize: 12, fontWeight: '700', color: c.text },
   insightItem: { color: c.text, marginTop: 6, lineHeight: 20 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
+  shrinkText: { flexShrink: 1 },
   requestRow: { borderTopWidth: 1, borderTopColor: c.border, paddingTop: 10, marginTop: 10, gap: 4 },
   requestId: { fontWeight: '800', color: c.text },
   statusBadge: { fontWeight: '700', fontSize: 12 },
