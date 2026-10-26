@@ -5,8 +5,11 @@ Aplicación móvil Expo/React Native que consume el mismo API REST del proyecto 
 ## Inicio
 
 1. Copia `.env.example` a `.env` y ajusta `EXPO_PUBLIC_API_URL` si usarás una instancia local.
-2. Ejecuta `npm install`.
-3. Ejecuta `npx expo start`.
+2. Ejecuta `npm.cmd install`.
+3. Con un emulador Android iniciado o un teléfono conectado, ejecuta una vez `npm.cmd run android`. Esto instala el Development Build de Expo requerido por los módulos nativos.
+4. Para las ejecuciones posteriores, inicia Metro con `npm.cmd start` y abre **Nethink B2B** en el emulador o dispositivo.
+
+No uses Expo Go para esta aplicación: `expo-speech-recognition` requiere el Development Build instalado en el paso 3.
 
 Para un teléfono físico, el API local debe usar la IP LAN de la máquina (por ejemplo `http://192.168.1.10:8081/api`), no `localhost`.
 
