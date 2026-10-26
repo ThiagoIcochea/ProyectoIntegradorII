@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button, Card, EmptyState, Input, Loading } from '@/components/ui';
 import { spacing } from '@/constants/theme';
@@ -9,25 +10,198 @@ import { apiError } from '@/services/api';
 import { b2bService } from '@/services/b2b.service';
 import { storage } from '@/services/storage';
 
-type CartItem = { idProducto:number; name:string; detail:string; qty:number; precioReferencia?:number|null; categoria?:string; marca?:string };
+type CartItem = { idProducto: number; name: string; detail: string; qty: number; precioReferencia?: number | null; categoria?: string; marca?: string };
+type Priority = 'BALANCEADO' | 'PRECIO' | 'TIEMPO';
+
+const priorityLabel: Record<Priority, string> = { BALANCEADO: 'Mejor equilibrio', PRECIO: 'Mejor precio', TIEMPO: 'Entrega rápida' };
+
 export default function Catalog() {
-  const {search:searchParam}=useLocalSearchParams<{search?:string}>();
-  const [products,setProducts]=useState<Product[]>([]),[cart,setCart]=useState<CartItem[]>([]),[filters,setFilters]=useState<any>({categorias:[],marcas:[]});
-  const [categories,setCategories]=useState<number[]>([]),[brands,setBrands]=useState<number[]>([]),[priceMin,setPriceMin]=useState(''),[priceMax,setPriceMax]=useState(''),[search,setSearch]=useState('');
-  const [priority,setPriority]=useState<'BALANCEADO'|'PRECIO'|'TIEMPO'>('BALANCEADO'),[showFilters,setShowFilters]=useState(false),[showCart,setShowCart]=useState(false),[loading,setLoading]=useState(true),[matching,setMatching]=useState(false);
-  const s=useStyles();
-  const load=useCallback(async()=>{setLoading(true);try{const [catalog,available,saved]=await Promise.all([b2bService.catalog({categorias:categories.length?categories:null,marcas:brands.length?brands:null,precioMin:priceMin?Number(priceMin):null,precioMax:priceMax?Number(priceMax):null,especificaciones:[]}),b2bService.productFilters(),storage.getCart<CartItem>()]);setProducts(catalog||[]);setFilters(available||{categorias:[],marcas:[]});setCart(saved||[]);}catch(e){Alert.alert('No se pudo cargar el catalogo',apiError(e));}finally{setLoading(false);}},[categories,brands,priceMin,priceMax]);
-  useEffect(()=>{void load();},[load]);
-  useEffect(()=>{if(typeof searchParam==='string'&&searchParam)setSearch(searchParam);},[searchParam]);
-  const visible=products.filter(p=>[p.producto,p.nombre,p.marca,p.categoria,p.descripcion].filter(Boolean).join(' ').toLowerCase().includes(search.trim().toLowerCase()));
-  const toggle=(id:number,source:number[],update:(value:number[])=>void)=>update(source.includes(id)?source.filter(x=>x!==id):[...source,id]);
-  const saveCart=async(next:CartItem[])=>{setCart(next);await storage.setCart(next);};
-  const add=async(p:Product)=>{const id=Number(p.idProducto||p.id);if(!id)return;const old=cart.find(x=>x.idProducto===id);await saveCart(old?cart.map(x=>x.idProducto===id?{...x,qty:x.qty+1}:x):[...cart,{idProducto:id,name:p.producto||p.nombre||'Producto',detail:[p.marca,p.categoria].filter(Boolean).join(' - '),qty:1,precioReferencia:p.precioUnitario||p.precio||null,categoria:p.categoria,marca:p.marca}]);};
-  const apply=()=>{const min=Number(priceMin||0),max=Number(priceMax||0);if(min&&max&&min>max)return Alert.alert('Rango invalido','El precio minimo no puede superar el maximo.');setShowFilters(false);};
-  const find=async()=>{if(!cart.length)return Alert.alert('Solicitud vacia','Agrega al menos un producto al RFQ.');setMatching(true);try{const providers=await b2bService.rfqMatches({items:cart.map(x=>({idProducto:x.idProducto,cantidad:x.qty})),filtro:{marcas:brands,categorias:categories,precioMin:priceMin?Number(priceMin):null,precioMax:priceMax?Number(priceMax):null},prioridad:priority});await storage.setSelectedProvider({providers,cart,priority});router.push('/rfq-results');}catch(e){Alert.alert('No se encontraron proveedores',apiError(e));}finally{setMatching(false);}};
-  if(loading)return <Loading/>;
-  return <View style={s.root}><FlatList data={visible} keyExtractor={(p,i)=>String(p.idProducto||p.id||i)} contentContainerStyle={s.list} refreshControl={<RefreshControl refreshing={loading} onRefresh={load}/>} ListHeaderComponent={<><View style={s.hero}><Text style={s.eyebrow}>MARKETPLACE B2B</Text><Text style={s.heroTitle}>Encuentra tecnologia para tu empresa</Text><Text style={s.heroCopy}>Toca un producto para ver sus proveedores y resenas.</Text></View><Input label="Buscar en catalogo" value={search} onChangeText={setSearch} placeholder="Producto, marca o categoria"/><Button title="Filtros" variant="secondary" onPress={()=>setShowFilters(true)}/></>} ListEmptyComponent={<EmptyState title="No encontramos productos" detail="Cambia la busqueda o limpia los filtros."/>} renderItem={({item})=>{const image=item.imagenes?.find(x=>x.principal)?.url||item.imagenes?.[0]?.url;return <Card style={s.product}><Pressable style={s.productTap} onPress={()=>router.push({pathname:'/reviews',params:{productId:String(item.idProducto||item.id),product:String(item.producto||item.nombre||'Producto')}})}>{image?<Image source={{uri:image}} style={s.image}/>:<View style={s.placeholder}><Text style={s.placeholderText}>Producto</Text></View>}<View style={s.info}><Text style={s.name}>{item.producto||item.nombre||'Producto'}</Text><Text style={s.meta}>{[item.marca,item.categoria].filter(Boolean).join(' - ')||'Catalogo B2B'}</Text><Text style={s.price}>{item.precioUnitario||item.precio?`S/ ${Number(item.precioUnitario||item.precio).toFixed(2)}`:'Cotizar precio'}</Text></View></Pressable><Button title="Agregar al RFQ" variant="secondary" onPress={()=>void add(item)}/></Card>;}}/><Pressable style={s.fab} onPress={()=>setShowCart(true)}><Text style={s.fabText}>RFQ ({cart.reduce((n,x)=>n+x.qty,0)})</Text></Pressable>
-  <Modal visible={showFilters} animationType="slide" onRequestClose={()=>setShowFilters(false)}><ScrollView style={s.modal} contentContainerStyle={s.modalContent}><Text style={s.modalTitle}>Filtros del catalogo</Text><Text style={s.group}>Rango de precio</Text><Input label="Precio minimo" keyboardType="decimal-pad" value={priceMin} onChangeText={setPriceMin} placeholder="0.00"/><Input label="Precio maximo" keyboardType="decimal-pad" value={priceMax} onChangeText={setPriceMax} placeholder="Sin limite"/><Text style={s.group}>Categorias</Text>{(filters.categorias||[]).map((x:any)=>{const id=Number(x.idCategoria??x.id);return <Pressable key={id} style={[s.option,categories.includes(id)&&s.optionActive]} onPress={()=>toggle(id,categories,setCategories)}><Text style={s.optionText}>{x.nombre||x.categoria}</Text></Pressable>;})}<Text style={s.group}>Marcas</Text>{(filters.marcas||[]).map((x:any)=>{const id=Number(x.idMarca??x.id);return <Pressable key={id} style={[s.option,brands.includes(id)&&s.optionActive]} onPress={()=>toggle(id,brands,setBrands)}><Text style={s.optionText}>{x.nombre||x.marca}</Text></Pressable>;})}<Button title="Aplicar filtros" onPress={apply}/><Button title="Limpiar filtros" variant="secondary" onPress={()=>{setCategories([]);setBrands([]);setPriceMin('');setPriceMax('');}}/></ScrollView></Modal>
-  <Modal visible={showCart} animationType="slide" onRequestClose={()=>setShowCart(false)}><ScrollView style={s.modal} contentContainerStyle={s.modalContent}><Text style={s.modalTitle}>Tu solicitud RFQ</Text>{cart.length?cart.map(x=><Card key={x.idProducto}><Text style={s.name}>{x.name}</Text><Text style={s.meta}>{x.detail} - Cantidad: {x.qty}</Text><View style={s.controls}><Button title="-" variant="secondary" onPress={()=>void saveCart(x.qty===1?cart.filter(y=>y.idProducto!==x.idProducto):cart.map(y=>y.idProducto===x.idProducto?{...y,qty:y.qty-1}:y))}/><Button title="+" variant="secondary" onPress={()=>void saveCart(cart.map(y=>y.idProducto===x.idProducto?{...y,qty:y.qty+1}:y))}/></View></Card>):<EmptyState title="Aun no agregas productos" detail="Explora el catalogo para preparar una cotizacion."/>}<Text style={s.group}>Prioridad</Text>{(['BALANCEADO','PRECIO','TIEMPO']as const).map(x=><Pressable key={x} style={[s.option,priority===x&&s.optionActive]} onPress={()=>setPriority(x)}><Text style={s.optionText}>{x==='BALANCEADO'?'Mejor equilibrio':x==='PRECIO'?'Mejor precio':'Entrega rapida'}</Text></Pressable>)}<Button title="Buscar proveedores" loading={matching} onPress={()=>void find()}/><Button title="Seguir explorando" variant="secondary" onPress={()=>setShowCart(false)}/></ScrollView></Modal></View>;
+  const { search: searchParam } = useLocalSearchParams<{ search?: string }>();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [filters, setFilters] = useState<any>({ categorias: [], marcas: [] });
+  const [categories, setCategories] = useState<number[]>([]);
+  const [brands, setBrands] = useState<number[]>([]);
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [search, setSearch] = useState('');
+  const [priority, setPriority] = useState<Priority>('BALANCEADO');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [matching, setMatching] = useState(false);
+  const styles = useStyles();
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [catalog, available, saved] = await Promise.all([
+        b2bService.catalog({ categorias: categories.length ? categories : null, marcas: brands.length ? brands : null, precioMin: priceMin ? Number(priceMin) : null, precioMax: priceMax ? Number(priceMax) : null, especificaciones: [] }),
+        b2bService.productFilters(),
+        storage.getCart<CartItem>()
+      ]);
+      setProducts(catalog || []);
+      setFilters(available || { categorias: [], marcas: [] });
+      setCart(saved || []);
+    } catch (error) {
+      Alert.alert('No se pudo cargar el catálogo', apiError(error));
+    } finally {
+      setLoading(false);
+    }
+  }, [brands, categories, priceMax, priceMin]);
+
+  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { if (typeof searchParam === 'string' && searchParam) setSearch(searchParam); }, [searchParam]);
+
+  const visibleProducts = products.filter(product => [product.producto, product.nombre, product.marca, product.categoria, product.descripcion].filter(Boolean).join(' ').toLowerCase().includes(search.trim().toLowerCase()));
+  const itemCount = cart.reduce((sum, item) => sum + item.qty, 0);
+  const toggle = (id: number, source: number[], update: (value: number[]) => void) => update(source.includes(id) ? source.filter(value => value !== id) : [...source, id]);
+  const saveCart = async (next: CartItem[]) => { setCart(next); await storage.setCart(next); };
+
+  const add = async (product: Product) => {
+    const id = Number(product.idProducto || product.id);
+    if (!id) return;
+    const existing = cart.find(item => item.idProducto === id);
+    await saveCart(existing ? cart.map(item => item.idProducto === id ? { ...item, qty: item.qty + 1 } : item) : [...cart, { idProducto: id, name: product.producto || product.nombre || 'Producto', detail: [product.marca, product.categoria].filter(Boolean).join(' · '), qty: 1, precioReferencia: product.precioUnitario || product.precio || null, categoria: product.categoria, marca: product.marca }]);
+  };
+
+  const apply = () => {
+    const min = Number(priceMin || 0);
+    const max = Number(priceMax || 0);
+    if (min && max && min > max) {
+      Alert.alert('Rango inválido', 'El precio mínimo no puede superar el máximo.');
+      return;
+    }
+    setShowFilters(false);
+  };
+
+  const find = async () => {
+    if (!cart.length) {
+      Alert.alert('Solicitud vacía', 'Agrega al menos un producto al RFQ.');
+      return;
+    }
+    setMatching(true);
+    try {
+      const providers = await b2bService.rfqMatches({ items: cart.map(item => ({ idProducto: item.idProducto, cantidad: item.qty })), filtro: { marcas: brands, categorias: categories, precioMin: priceMin ? Number(priceMin) : null, precioMax: priceMax ? Number(priceMax) : null }, prioridad: priority });
+      await storage.setSelectedProvider({ providers, cart, priority });
+      router.push('/rfq-results');
+    } catch (error) {
+      Alert.alert('No se encontraron proveedores', apiError(error));
+    } finally {
+      setMatching(false);
+    }
+  };
+
+  if (loading) return <Loading />;
+
+  return (
+    <View style={styles.root}>
+      <FlatList
+        data={visibleProducts}
+        keyExtractor={(product, index) => String(product.idProducto || product.id || index)}
+        contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+        ListHeaderComponent={<>
+          <View style={styles.hero}>
+            <Text style={styles.eyebrow}>MARKETPLACE B2B</Text>
+            <Text accessibilityRole="header" style={styles.heroTitle}>Encuentra tecnología para tu empresa</Text>
+            <Text style={styles.heroCopy}>Compara productos, solicita cotizaciones y encuentra proveedores confiables.</Text>
+          </View>
+          <Input label="Buscar en catálogo" accessibilityHint="Filtra productos por nombre, marca o categoría" value={search} onChangeText={setSearch} placeholder="Producto, marca o categoría" returnKeyType="search" />
+          <Button title="Abrir filtros" variant="secondary" accessibilityHint="Filtra por precio, categoría o marca" onPress={() => setShowFilters(true)} />
+          <Text accessibilityRole="header" style={styles.resultsLabel}>{visibleProducts.length} {visibleProducts.length === 1 ? 'producto disponible' : 'productos disponibles'}</Text>
+        </>}
+        ListEmptyComponent={<EmptyState title="No encontramos productos" detail="Cambia la búsqueda o limpia los filtros." />}
+        renderItem={({ item }) => {
+          const image = item.imagenes?.find(value => value.principal)?.url || item.imagenes?.[0]?.url;
+          const name = item.producto || item.nombre || 'Producto';
+          const detail = [item.marca, item.categoria].filter(Boolean).join(' · ') || 'Catálogo B2B';
+          const price = item.precioUnitario || item.precio ? `S/ ${Number(item.precioUnitario || item.precio).toFixed(2)}` : 'Cotizar precio';
+          return <Card style={styles.product}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`${name}. ${detail}. ${price}`} accessibilityHint="Abre las reseñas y proveedores disponibles" onPress={() => router.push({ pathname: '/reviews', params: { productId: String(item.idProducto || item.id), product: String(name) } })} style={({ pressed }) => [styles.productTap, pressed && styles.productPressed]}>
+              {image ? <Image source={{ uri: image }} accessibilityLabel={`Imagen de ${name}`} style={styles.image} /> : <View accessible={false} style={styles.placeholder}><Ionicons name="cube-outline" size={28} color={styles.placeholderText.color} /></View>}
+              <View style={styles.info}>
+                <Text style={styles.name}>{name}</Text>
+                <Text style={styles.meta}>{detail}</Text>
+                <Text style={styles.price}>{price}</Text>
+              </View>
+              <Ionicons accessible={false} name="chevron-forward" size={20} color={styles.chevron.color} />
+            </Pressable>
+            <Button title="Agregar al RFQ" variant="secondary" accessibilityLabel={`Agregar ${name} al RFQ`} onPress={() => void add(item)} />
+          </Card>;
+        }} />
+
+      <Pressable accessibilityRole="button" accessibilityLabel={`Abrir solicitud RFQ. ${itemCount} productos`} accessibilityHint="Revisa productos, cantidades y prioridad antes de buscar proveedores" onPress={() => setShowCart(true)} style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}>
+        <Ionicons accessible={false} name="cart-outline" size={20} color="#fff" />
+        <Text style={styles.fabText}>RFQ ({itemCount})</Text>
+      </Pressable>
+
+      <Modal visible={showFilters} animationType="slide" onRequestClose={() => setShowFilters(false)}>
+        <View accessibilityViewIsModal style={styles.modal}>
+          <ScrollView contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
+            <View style={styles.modalHeader}><Text accessibilityRole="header" style={styles.modalTitle}>Filtros del catálogo</Text><Button title="Cerrar" variant="secondary" style={styles.closeButton} onPress={() => setShowFilters(false)} /></View>
+            <Text style={styles.group}>Rango de precio</Text>
+            <Input label="Precio mínimo" keyboardType="decimal-pad" value={priceMin} onChangeText={setPriceMin} placeholder="0.00" />
+            <Input label="Precio máximo" keyboardType="decimal-pad" value={priceMax} onChangeText={setPriceMax} placeholder="Sin límite" />
+            <Text style={styles.group}>Categorías</Text>
+            {(filters.categorias || []).map((value: any) => { const id = Number(value.idCategoria ?? value.id); const selected = categories.includes(id); return <Pressable key={id} accessibilityRole="checkbox" accessibilityLabel={value.nombre || value.categoria} accessibilityState={{ checked: selected }} onPress={() => toggle(id, categories, setCategories)} style={({ pressed }) => [styles.option, selected && styles.optionActive, pressed && styles.optionPressed]}><Text style={styles.optionText}>{value.nombre || value.categoria}</Text>{selected ? <Ionicons accessible={false} name="checkmark-circle" size={20} color={styles.selectionIcon.color} /> : null}</Pressable>; })}
+            <Text style={styles.group}>Marcas</Text>
+            {(filters.marcas || []).map((value: any) => { const id = Number(value.idMarca ?? value.id); const selected = brands.includes(id); return <Pressable key={id} accessibilityRole="checkbox" accessibilityLabel={value.nombre || value.marca} accessibilityState={{ checked: selected }} onPress={() => toggle(id, brands, setBrands)} style={({ pressed }) => [styles.option, selected && styles.optionActive, pressed && styles.optionPressed]}><Text style={styles.optionText}>{value.nombre || value.marca}</Text>{selected ? <Ionicons accessible={false} name="checkmark-circle" size={20} color={styles.selectionIcon.color} /> : null}</Pressable>; })}
+            <Button title="Aplicar filtros" onPress={apply} />
+            <Button title="Limpiar filtros" variant="secondary" onPress={() => { setCategories([]); setBrands([]); setPriceMin(''); setPriceMax(''); }} />
+          </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal visible={showCart} animationType="slide" onRequestClose={() => setShowCart(false)}>
+        <View accessibilityViewIsModal style={styles.modal}>
+          <ScrollView contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
+            <View style={styles.modalHeader}><Text accessibilityRole="header" style={styles.modalTitle}>Tu solicitud RFQ</Text><Button title="Cerrar" variant="secondary" style={styles.closeButton} onPress={() => setShowCart(false)} /></View>
+            {cart.length ? cart.map(item => <Card key={item.idProducto}><Text style={styles.name}>{item.name}</Text><Text style={styles.meta}>{item.detail} · Cantidad: {item.qty}</Text><View style={styles.controls}><Button title="−" variant="secondary" accessibilityLabel={`Reducir cantidad de ${item.name}`} onPress={() => void saveCart(item.qty === 1 ? cart.filter(value => value.idProducto !== item.idProducto) : cart.map(value => value.idProducto === item.idProducto ? { ...value, qty: value.qty - 1 } : value))} /><Button title="+" variant="secondary" accessibilityLabel={`Aumentar cantidad de ${item.name}`} onPress={() => void saveCart(cart.map(value => value.idProducto === item.idProducto ? { ...value, qty: value.qty + 1 } : value))} /></View></Card>) : <EmptyState title="Aún no agregas productos" detail="Explora el catálogo para preparar una cotización." />}
+            <Text style={styles.group}>Prioridad</Text>
+            <View accessibilityRole="radiogroup" style={styles.optionGroup}>{(Object.keys(priorityLabel) as Priority[]).map(value => { const selected = priority === value; return <Pressable key={value} accessibilityRole="radio" accessibilityLabel={priorityLabel[value]} accessibilityState={{ selected }} onPress={() => setPriority(value)} style={({ pressed }) => [styles.option, selected && styles.optionActive, pressed && styles.optionPressed]}><Text style={styles.optionText}>{priorityLabel[value]}</Text>{selected ? <Ionicons accessible={false} name="radio-button-on" size={20} color={styles.selectionIcon.color} /> : <Ionicons accessible={false} name="radio-button-off" size={20} color={styles.chevron.color} />}</Pressable>; })}</View>
+            <Button title="Buscar proveedores" loading={matching} disabled={!cart.length} accessibilityHint="Busca proveedores que puedan atender todos los productos de la solicitud" onPress={() => void find()} />
+            <Button title="Seguir explorando" variant="secondary" onPress={() => setShowCart(false)} />
+          </ScrollView>
+        </View>
+      </Modal>
+    </View>
+  );
 }
-const useStyles=()=>useThemedStyles(c=>StyleSheet.create({root:{flex:1,backgroundColor:c.bg},list:{padding:spacing.md,paddingBottom:90,gap:12},hero:{backgroundColor:c.navy,padding:spacing.lg,borderRadius:8,gap:6},eyebrow:{fontSize:12,fontWeight:'800',color:c.primaryLight},heroTitle:{fontSize:24,fontWeight:'800',color:'#fff'},heroCopy:{color:'#dbeafe'},product:{gap:10},productTap:{flexDirection:'row',gap:12},image:{width:88,height:88,borderRadius:8,backgroundColor:c.surfaceSoft},placeholder:{width:88,height:88,borderRadius:8,backgroundColor:c.surfaceSoft,justifyContent:'center',alignItems:'center'},placeholderText:{color:c.muted,fontSize:12},info:{flex:1,gap:5},name:{fontSize:16,fontWeight:'800',color:c.text},meta:{color:c.muted,fontSize:13},price:{fontWeight:'800',color:c.primaryDark},fab:{position:'absolute',right:20,bottom:20,backgroundColor:c.primary,paddingVertical:14,paddingHorizontal:18,borderRadius:8,elevation:4},fabText:{color:'#fff',fontWeight:'800'},modal:{flex:1,backgroundColor:c.bg},modalContent:{padding:spacing.lg,gap:12},modalTitle:{fontSize:24,fontWeight:'800',color:c.navy},group:{fontSize:16,fontWeight:'800',color:c.text,marginTop:8},option:{padding:13,borderWidth:1,borderColor:c.border,borderRadius:8,backgroundColor:c.surface},optionActive:{borderColor:c.primary,backgroundColor:c.surfaceSoft},optionText:{color:c.text,fontWeight:'600'},controls:{flexDirection:'row',gap:8}}));
+
+const useStyles = () => useThemedStyles(c => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
+  list: { padding: spacing.md, paddingBottom: 120, gap: 12 },
+  hero: { backgroundColor: c.navy, padding: spacing.lg, borderRadius: 16, gap: 7, borderWidth: 1, borderColor: c.border },
+  eyebrow: { fontSize: 12, fontWeight: '800', color: c.primaryLight, letterSpacing: 0.8 },
+  heroTitle: { fontSize: 26, fontWeight: '800', color: '#fff', lineHeight: 32 },
+  heroCopy: { color: c.accentText, lineHeight: 21 },
+  resultsLabel: { color: c.text, fontSize: 17, fontWeight: '800', marginTop: 4 },
+  product: { gap: 12 },
+  productTap: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 12 },
+  productPressed: { opacity: 0.72 },
+  image: { width: 88, height: 88, borderRadius: 12, backgroundColor: c.surfaceSoft },
+  placeholder: { width: 88, height: 88, borderRadius: 12, backgroundColor: c.surfaceSoft, justifyContent: 'center', alignItems: 'center' },
+  placeholderText: { color: c.muted },
+  info: { flex: 1, gap: 5 },
+  name: { fontSize: 16, fontWeight: '800', color: c.text },
+  meta: { color: c.muted, fontSize: 13, lineHeight: 18 },
+  price: { fontWeight: '800', color: c.accentText, fontSize: 15 },
+  chevron: { color: c.muted },
+  fab: { position: 'absolute', right: 20, bottom: 20, minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: c.primary, paddingHorizontal: 18, borderRadius: 26, elevation: 4 },
+  fabPressed: { opacity: 0.84, transform: [{ scale: 0.98 }] },
+  fabText: { color: '#fff', fontWeight: '800' },
+  modal: { flex: 1, backgroundColor: c.bg },
+  modalContent: { padding: spacing.lg, gap: 12, paddingBottom: spacing.xl },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 4 },
+  closeButton: { minWidth: 84 },
+  modalTitle: { flex: 1, fontSize: 24, fontWeight: '800', color: c.text },
+  group: { fontSize: 16, fontWeight: '800', color: c.text, marginTop: 8 },
+  optionGroup: { gap: 8 },
+  option: { minHeight: 48, paddingHorizontal: 13, borderWidth: 1, borderColor: c.border, borderRadius: 12, backgroundColor: c.surface, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  optionActive: { borderColor: c.primary, backgroundColor: c.surfaceSoft },
+  optionPressed: { opacity: 0.76 },
+  optionText: { flex: 1, color: c.text, fontWeight: '600' },
+  selectionIcon: { color: c.accent },
+  controls: { flexDirection: 'row', gap: 8 }
+}));

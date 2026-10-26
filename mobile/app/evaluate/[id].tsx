@@ -16,8 +16,8 @@ const categories: { key: Category; label: string }[] = [
   { key: 'comunicacion', label: 'Comunicación' },
 ];
 
-function StarRow({ value, onChange, color }: { value: number; onChange: (value: number) => void; color: string }) {
-  return <View style={{ flexDirection: 'row', gap: 4 }}>{[1, 2, 3, 4, 5].map(star => <Pressable key={star} accessibilityRole="button" accessibilityLabel={`${star} estrellas`} onPress={() => onChange(star)} hitSlop={6}><Ionicons name={star <= value ? 'star' : 'star-outline'} size={28} color={color} /></Pressable>)}</View>;
+function StarRow({ label, value, onChange, color }: { label: string; value: number; onChange: (value: number) => void; color: string }) {
+  return <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ flexDirection: 'row', gap: 4 }}>{[1, 2, 3, 4, 5].map(star => <Pressable key={star} accessibilityRole="radio" accessibilityLabel={`${label}: ${star} ${star === 1 ? 'estrella' : 'estrellas'}`} accessibilityState={{ selected: star === value }} onPress={() => onChange(star)} hitSlop={6} style={({ pressed }) => ({ minWidth: 40, minHeight: 44, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.7 : 1 })}><Ionicons name={star <= value ? 'star' : 'star-outline'} size={28} color={color} /></Pressable>)}</View>;
 }
 
 export default function EvaluateRequest() {
@@ -44,7 +44,7 @@ export default function EvaluateRequest() {
     <Text style={styles.title}>Evaluar solicitud</Text>
     <Text style={styles.subtitle}>Califica tu experiencia con la solicitud RFQ-{String(id).padStart(4, '0')}.</Text>
     <Card style={styles.card}>
-      {categories.map(category => <View key={category.key} style={styles.row}><Text style={styles.label}>{category.label}</Text><StarRow value={ratings[category.key]} onChange={value => setRating(category.key, value)} color={styles.starColor.color} /></View>)}
+      {categories.map(category => <View key={category.key} style={styles.row}><Text style={styles.label}>{category.label}</Text><StarRow label={category.label} value={ratings[category.key]} onChange={value => setRating(category.key, value)} color={styles.starColor.color} /></View>)}
     </Card>
     <Input label="Comentario (opcional)" multiline value={comentario} onChangeText={setComentario} placeholder="Describe tu experiencia" />
     <Button title="Enviar evaluación" onPress={submit} loading={submitting} />

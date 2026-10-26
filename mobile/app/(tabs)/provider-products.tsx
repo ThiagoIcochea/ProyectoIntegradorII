@@ -90,13 +90,13 @@ export default function ProviderProducts() {
 
         <View style={styles.rowBetween}>
           <Text style={styles.section}>Descuentos por volumen</Text>
-          <Text onPress={addTier} style={styles.addLink}>+ Agregar nivel</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Agregar nivel de descuento" onPress={addTier} style={({ pressed }) => [styles.linkButton, pressed && styles.linkButtonPressed]}><Text style={styles.addLink}>+ Agregar nivel</Text></Pressable>
         </View>
         {editing.descuentosVolumen.length ? editing.descuentosVolumen.map((tier, i) => (
           <Card key={i}>
             <View style={styles.rowBetween}>
               <Text style={styles.tierTitle}>Nivel {i + 1}</Text>
-              <Text onPress={() => removeTier(i)} style={styles.removeLink}>Eliminar</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Eliminar nivel de descuento ${i + 1}`} onPress={() => removeTier(i)} style={({ pressed }) => [styles.linkButton, pressed && styles.linkButtonPressed]}><Text style={styles.removeLink}>Eliminar</Text></Pressable>
             </View>
             <Input label="Cantidad mínima" keyboardType="number-pad" value={tier.cantidadMin} onChangeText={v => setTier(i, 'cantidadMin', v.replace(/[^0-9]/g, ''))} />
             <Input label="Precio unitario desde esa cantidad (S/)" keyboardType="decimal-pad" value={tier.precioUnitario} onChangeText={v => setTier(i, 'precioUnitario', v.replace(/[^0-9.]/g, ''))} />
@@ -122,7 +122,7 @@ export default function ProviderProducts() {
       </>}
       ListEmptyComponent={<EmptyState title="Sin productos" detail="Aún no tienes productos registrados en tu catálogo." />}
       renderItem={({ item }) => (
-        <Pressable onPress={() => openEditor(item)}>
+        <Pressable accessibilityRole="button" accessibilityLabel={`Editar ${item.nombre || item.producto || 'producto'}`} accessibilityHint="Abre la edición de precio, stock y descuentos" onPress={() => openEditor(item)} style={({ pressed }) => pressed && styles.productPressed}>
           <Card>
             <Text style={styles.name}>{item.nombre || item.producto || 'Producto'}</Text>
             <Text style={styles.detail}>SKU: {item.skuGlobal || item.sku || '-'} · Estado: {item.estado || item.estadoProducto || 'ACTIVO'}</Text>
@@ -157,5 +157,8 @@ const useStyles = () => useThemedStyles(c => StyleSheet.create({
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
   addLink: { color: c.primary, fontWeight: '700' },
   removeLink: { color: c.dangerText, fontWeight: '700' },
+  linkButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 6, borderRadius: 8 },
+  linkButtonPressed: { opacity: 0.7, backgroundColor: c.surfaceSoft },
+  productPressed: { opacity: 0.74 },
   tierTitle: { fontSize: 15, fontWeight: '800', color: c.text },
 }));
