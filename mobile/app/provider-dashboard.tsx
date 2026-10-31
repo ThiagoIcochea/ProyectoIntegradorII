@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Button, Card, Loading } from '@/components/ui';
+import { Button, Card, ScreenSkeleton } from '@/components/ui';
 import { spacing } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/use-themed-styles';
 import { useAuth } from '@/hooks/use-auth';
@@ -159,7 +159,7 @@ export default function ProviderDashboard() {
 
   useFocusEffect(useCallback(() => { void load(); }, [load]));
 
-  if (loading) return <Loading />;
+  if (loading) return <ScreenSkeleton variant="dashboard" />;
 
   const hasDashboard = Number((subscription as any)?.idPlan) === 3 && !(subscription as any)?.bloqueado;
 
