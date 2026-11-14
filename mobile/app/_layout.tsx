@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import { Stack, router, useSegments } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
-import { ThemeProvider } from '@/hooks/use-theme';
+import { ThemeProvider, useTheme } from '@/hooks/use-theme';
 import { VoiceAssistant } from '@/components/voice-assistant';
 import { b2bService } from '@/services/b2b.service';
+import { BackButton } from '@/components/ui';
+import { paletteFor } from '@/constants/theme';
 
 function AccessGate({ children }: { children: React.ReactNode }) {
   const { session, ready } = useAuth(); const segments = useSegments();
@@ -12,5 +14,34 @@ function AccessGate({ children }: { children: React.ReactNode }) {
   useEffect(() => { if (!ready || session?.role !== 'PROVEEDOR' || !session.idUsuario) return; const route=segments.join('/'); if(route.includes('provider-plans')) return; void b2bService.subscriptionStatus(Number(session.idUsuario)).then(status => { const blocked=status?.bloqueado===true || String(status?.estado||'').toUpperCase()!=='ACTIVA'; if(blocked) router.replace('/provider-plans'); }).catch(()=>undefined); }, [ready, session?.idUsuario, session?.role, segments]);
   return <>{children}</>;
 }
-function AppShell() { const { session } = useAuth(); return <AccessGate><Stack screenOptions={{ headerShown: false }}><Stack.Screen name="(auth)" /><Stack.Screen name="(tabs)" /><Stack.Screen name="mfa" /><Stack.Screen name="provider-operations" /><Stack.Screen name="provider-plans" /><Stack.Screen name="provider-dashboard" /><Stack.Screen name="admin-operations" /><Stack.Screen name="payment" /></Stack>{session ? <VoiceAssistant /> : null}</AccessGate>; }
+function AppShell() {
+  const { session } = useAuth();
+  const { theme } = useTheme();
+  const colors = paletteFor(theme);
+  const screenOptions = {
+    headerStyle: { backgroundColor: colors.navy },
+    headerTintColor: '#fff',
+    headerTitleStyle: { fontWeight: '800' as const },
+    headerShadowVisible: false,
+    headerLeft: () => <BackButton fallback="/(tabs)" color="#fff" />,
+  };
+
+  return <AccessGate><Stack screenOptions={screenOptions}>
+    <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <Stack.Screen name="mfa" options={{ title: 'Verificación', headerLeft: () => <BackButton fallback="/(auth)/login" color="#fff" /> }} />
+    <Stack.Screen name="provider-operations" options={{ title: 'Operaciones' }} />
+    <Stack.Screen name="provider-plans" options={{ title: 'Planes y beneficios' }} />
+    <Stack.Screen name="provider-dashboard" options={{ title: 'Panel de proveedor' }} />
+    <Stack.Screen name="admin-operations" options={{ title: 'Operaciones de administración' }} />
+    <Stack.Screen name="payment" options={{ title: 'Registrar pago' }} />
+    <Stack.Screen name="quotation" options={{ title: 'Confirmar cotización' }} />
+    <Stack.Screen name="rfq-results" options={{ title: 'Proveedores compatibles' }} />
+    <Stack.Screen name="request/[id]" options={{ title: 'Seguimiento de solicitud' }} />
+    <Stack.Screen name="evaluate/[id]" options={{ title: 'Evaluar solicitud' }} />
+    <Stack.Screen name="history" options={{ title: 'Historial de solicitudes' }} />
+    <Stack.Screen name="reviews" options={{ title: 'Reseñas' }} />
+    <Stack.Screen name="top-providers" options={{ title: 'Top proveedores' }} />
+  </Stack>{session ? <VoiceAssistant /> : null}</AccessGate>;
+}
 export default function RootLayout() { return <SafeAreaProvider><ThemeProvider><AuthProvider><AppShell /></AuthProvider></ThemeProvider></SafeAreaProvider>; }

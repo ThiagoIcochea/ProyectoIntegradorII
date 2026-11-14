@@ -39,6 +39,40 @@ export function SkeletonBlock({ style }: { style?: ViewStyle }) {
 }
 export function SkeletonCard() { const theme = useStyles(); return <View style={theme.card}><SkeletonBlock style={{ width: '60%', height: 16 }} /><SkeletonBlock style={{ width: '90%', height: 12 }} /><SkeletonBlock style={{ width: '40%', height: 12 }} /></View>; }
 export function EmptyState({ title, detail }: { title: string; detail: string }) { const theme = useStyles(); return <View style={theme.empty}><Text style={theme.emptyTitle}>{title}</Text><Text style={theme.emptyText}>{detail}</Text></View>; }
-export function BackButton() { const theme = useStyles(); return <Pressable accessibilityRole="button" accessibilityLabel="Regresar" hitSlop={12} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} style={theme.back}><Ionicons name="chevron-back" size={28} color={theme.backIcon.color} /></Pressable>; }
+/** A consistent, screen-reader friendly way to leave a secondary screen.
+ *
+ * The fallback is useful for deep links, where there is no navigation history to
+ * pop.  It is intentionally optional for tabs: pressing back on the first tab
+ * should not silently navigate the user somewhere unrelated.
+ */
+export function BackButton({ fallback, onPress, color }: { fallback?: string; onPress?: () => void; color?: string } = {}) {
+  const theme = useStyles();
+  const goBack = () => {
+    if (onPress) return onPress();
+    if (router.canGoBack()) router.back();
+    else if (fallback) router.replace(fallback as any);
+  };
+  return <Pressable accessibilityRole="button" accessibilityLabel="Regresar a la pantalla anterior" accessibilityHint="Vuelve a la vista que estabas consultando" hitSlop={12} onPress={goBack} style={theme.back}>
+    <Ionicons name="chevron-back" size={28} color={color || theme.backIcon.color} />
+  </Pressable>;
+}
+
+/** Use in sheets and modals, where closing is different from a destructive action. */
+export function CloseButton({ onPress }: { onPress: () => void }) {
+  const theme = useStyles();
+  return <Pressable accessibilityRole="button" accessibilityLabel="Cerrar ventana" accessibilityHint="Cierra esta ventana y vuelve al contenido anterior" hitSlop={12} onPress={onPress} style={theme.close}>
+    <Ionicons name="close" size={25} color={theme.backIcon.color} />
+  </Pressable>;
+}
+
+/** Header for full-screen modals: back on the left, explicit close on the right. */
+export function ModalHeader({ title, onClose }: { title: string; onClose: () => void }) {
+  const theme = useStyles();
+  return <View style={theme.modalHeader}>
+    <BackButton onPress={onClose} />
+    <Text accessibilityRole="header" numberOfLines={1} style={theme.modalHeaderTitle}>{title}</Text>
+    <CloseButton onPress={onClose} />
+  </View>;
+}
 export function confirm(title: string, message: string, action: () => void) { Alert.alert(title, message, [{ text: 'Cancelar', style: 'cancel' }, { text: 'Continuar', style: 'destructive', onPress: action }]); }
-const useStyles = () => useThemedStyles(c => StyleSheet.create({ button:{ backgroundColor:c.primary, minHeight:50, borderRadius:14, alignItems:'center', justifyContent:'center', paddingHorizontal:spacing.md }, buttonPressed:{ opacity:.88, transform:[{ scale:.985 }] }, buttonText:{ color:'#fff', fontWeight:'700', fontSize:16 }, secondary:{ backgroundColor:c.surfaceSoft, borderWidth:1, borderColor:c.border }, secondaryText:{ color:c.accentText }, danger:{ backgroundColor:c.danger }, disabled:{ opacity:.55 }, field:{ marginBottom:spacing.md }, label:{ color:c.text, fontWeight:'600', marginBottom:7 }, inputWrap:{ position:'relative' }, input:{ minHeight:52, borderWidth:1, borderColor:c.border, backgroundColor:c.surface, borderRadius:14, paddingHorizontal:14, color:c.text, fontSize:16 }, inputWithIcon:{ paddingRight:44 }, eyeButton:{ position:'absolute', right:4, top:0, bottom:0, width:40, alignItems:'center', justifyContent:'center' }, inputError:{ borderColor:c.danger }, error:{ color:c.dangerText, marginTop:5, fontSize:12 }, card:{ backgroundColor:c.surfaceRaised, borderRadius:18, padding:spacing.md, borderWidth:1, borderColor:c.border, gap:spacing.sm }, skeletonBlock:{ backgroundColor:c.surfaceSoft, borderRadius:6 }, skeletonScreen:{ flex:1, backgroundColor:c.bg, paddingHorizontal:20, paddingVertical:spacing.lg }, skeletonContent:{ width:'100%', maxWidth:680, alignSelf:'center', gap:spacing.md }, skeletonKicker:{ width:86, height:14, borderRadius:99, marginTop:spacing.sm }, skeletonHeading:{ width:'58%', height:30, borderRadius:8 }, skeletonSubheading:{ width:'84%', height:17, borderRadius:6, marginBottom:spacing.sm }, skeletonMetrics:{ flexDirection:'row', flexWrap:'wrap', gap:10 }, skeletonMetric:{ width:'47%', flexGrow:1, height:92, borderRadius:18 }, skeletonCard:{ minHeight:116, backgroundColor:c.surfaceRaised, borderWidth:1, borderColor:c.border, borderRadius:18, padding:spacing.md, gap:11 }, skeletonCardTitle:{ width:'58%', height:18, borderRadius:6 }, skeletonCardLine:{ width:'93%', height:14, borderRadius:5 }, skeletonCardLineShort:{ width:'45%', height:14, borderRadius:5 }, center:{ flex:1, justifyContent:'center', alignItems:'center', backgroundColor:c.bg }, spinner:{ color:c.primary }, placeholder:{ color:c.muted }, empty:{ alignItems:'center', padding:spacing.xl, gap:spacing.sm }, emptyTitle:{ fontSize:17, fontWeight:'700', color:c.text }, emptyText:{ textAlign:'center', color:c.muted }, back:{ alignSelf:'flex-start', width:44, height:44, alignItems:'center', justifyContent:'center', marginLeft:-8 }, backIcon:{ color:c.text } }));
+const useStyles = () => useThemedStyles(c => StyleSheet.create({ button:{ backgroundColor:c.primary, minHeight:50, borderRadius:14, alignItems:'center', justifyContent:'center', paddingHorizontal:spacing.md }, buttonPressed:{ opacity:.88, transform:[{ scale:.985 }] }, buttonText:{ color:'#fff', fontWeight:'700', fontSize:16 }, secondary:{ backgroundColor:c.surfaceSoft, borderWidth:1, borderColor:c.border }, secondaryText:{ color:c.accentText }, danger:{ backgroundColor:c.danger }, disabled:{ opacity:.55 }, field:{ marginBottom:spacing.md }, label:{ color:c.text, fontWeight:'600', marginBottom:7 }, inputWrap:{ position:'relative' }, input:{ minHeight:52, borderWidth:1, borderColor:c.border, backgroundColor:c.surface, borderRadius:14, paddingHorizontal:14, color:c.text, fontSize:16 }, inputWithIcon:{ paddingRight:44 }, eyeButton:{ position:'absolute', right:4, top:0, bottom:0, width:40, alignItems:'center', justifyContent:'center' }, inputError:{ borderColor:c.danger }, error:{ color:c.dangerText, marginTop:5, fontSize:12 }, card:{ backgroundColor:c.surfaceRaised, borderRadius:18, padding:spacing.md, borderWidth:1, borderColor:c.border, gap:spacing.sm }, skeletonBlock:{ backgroundColor:c.surfaceSoft, borderRadius:6 }, skeletonScreen:{ flex:1, backgroundColor:c.bg, paddingHorizontal:20, paddingVertical:spacing.lg }, skeletonContent:{ width:'100%', maxWidth:680, alignSelf:'center', gap:spacing.md }, skeletonKicker:{ width:86, height:14, borderRadius:99, marginTop:spacing.sm }, skeletonHeading:{ width:'58%', height:30, borderRadius:8 }, skeletonSubheading:{ width:'84%', height:17, borderRadius:6, marginBottom:spacing.sm }, skeletonMetrics:{ flexDirection:'row', flexWrap:'wrap', gap:10 }, skeletonMetric:{ width:'47%', flexGrow:1, height:92, borderRadius:18 }, skeletonCard:{ minHeight:116, backgroundColor:c.surfaceRaised, borderWidth:1, borderColor:c.border, borderRadius:18, padding:spacing.md, gap:11 }, skeletonCardTitle:{ width:'58%', height:18, borderRadius:6 }, skeletonCardLine:{ width:'93%', height:14, borderRadius:5 }, skeletonCardLineShort:{ width:'45%', height:14, borderRadius:5 }, center:{ flex:1, justifyContent:'center', alignItems:'center', backgroundColor:c.bg }, spinner:{ color:c.primary }, placeholder:{ color:c.muted }, empty:{ alignItems:'center', padding:spacing.xl, gap:spacing.sm }, emptyTitle:{ fontSize:17, fontWeight:'700', color:c.text }, emptyText:{ textAlign:'center', color:c.muted }, back:{ alignSelf:'flex-start', width:44, height:44, alignItems:'center', justifyContent:'center', marginLeft:-8 }, close:{ width:44, height:44, alignItems:'center', justifyContent:'center', marginRight:-8 }, backIcon:{ color:c.text }, modalHeader:{ minHeight:44, flexDirection:'row', alignItems:'center', justifyContent:'space-between', gap:spacing.sm }, modalHeaderTitle:{ flex:1, color:c.text, fontSize:20, fontWeight:'800', textAlign:'center' } }));

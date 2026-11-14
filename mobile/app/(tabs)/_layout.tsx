@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { paletteFor } from '@/constants/theme';
+import { BackButton } from '@/components/ui';
 
 export default function TabsLayout() {
   const { session } = useAuth();
@@ -13,10 +14,11 @@ export default function TabsLayout() {
   const admin = session?.role === 'ADMIN';
   const icon: Record<string, any> = { index: 'home-outline', catalog: 'storefront-outline', requests: 'clipboard-outline', history: 'time-outline', profile: 'person-outline', more: 'ellipsis-horizontal-circle-outline', admin: 'speedometer-outline', 'admin-users': 'people-outline', 'admin-providers': 'business-outline', 'admin-more': 'grid-outline' };
 
-  return <Tabs screenOptions={({ route }) => ({
+  return <Tabs backBehavior="history" screenOptions={({ route }) => ({
     headerStyle: { backgroundColor: colors.navy },
     headerTintColor: '#fff',
     headerTitleStyle: { fontWeight: '800', fontSize: 17 },
+    headerLeft: () => <BackButton color="#fff" />,
     tabBarStyle: { backgroundColor: colors.surfaceRaised, borderTopColor: colors.border, height: 64, paddingTop: 4, paddingBottom: 6 },
     tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
     tabBarActiveTintColor: colors.accent,
