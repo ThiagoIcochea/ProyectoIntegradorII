@@ -1,20 +1,44 @@
 # Nethink B2B Mobile
 
-Aplicación móvil Expo/React Native que consume el mismo API REST del proyecto web Angular. No modifica `Frontend/` ni `Backend/`.
+Aplicación móvil para la selección, comparación y abastecimiento de equipos de red de Nethink S.A.C., desarrollada con React Native, Expo y TypeScript.
 
-## Inicio
+## Tecnologías y Estructura
 
-1. Copia `.env.example` a `.env` y ajusta `EXPO_PUBLIC_API_URL` si usarás una instancia local.
-2. Ejecuta `npm install`.
-3. Ejecuta `npx expo start`.
+* Stack principal: React 19, React Native 0.81, Expo SDK 54, Expo Router, Axios (con interceptores JWT) y EAS Build.
+* Funciones nativas: Almacenamiento seguro, geolocalización, mapas, selección de documentos, síntesis y reconocimiento de voz.
+* Estructura clave:
+  * `app/`: Pantallas y rutas organizadas por rol mediante Expo Router.
+  * `components/`: Componentes UI reutilizables.
+  * `services/`: Gestión de Axios y consumo de endpoints REST.
+  * `app.json` / `eas.json`: Configuración de Expo, permisos y perfiles de compilación.
 
-Para un teléfono físico, el API local debe usar la IP LAN de la máquina (por ejemplo `http://192.168.1.10:8081/api`), no `localhost`.
+## Guía rápida de uso
 
-## Incluido
+1. Instalación y entorno:
+   ```bash
+   cd mobile
+   cp .env.example .env  # Configurar EXPO_PUBLIC_API_URL
+   npm install
+   ```
+   (Nota: Para dispositivos físicos en la misma red Wi-Fi, utiliza la IP LAN de tu equipo en lugar de `localhost`).
 
-- Sesión JWT en `expo-secure-store`, con encabezado `Authorization: Bearer TOKEN` centralizado por Axios.
-- Inicio de sesión, registro cliente/proveedor y verificación MFA del contrato actual.
-- Catálogo, solicitudes del cliente, solicitudes/pagos/entregas/reclamos/productos del proveedor y listas operativas de administración.
-- Estados de carga, vacío, error, confirmación y diseño de tarjetas adaptado a móvil.
+2. Ejecución local:
+   ```bash
+   npx expo start
+   ```
 
-Expo nativo no requiere cambios CORS. Si se abre el destino web de Expo, se conserva la configuración CORS ya existente del backend y se debe agregar solamente el origen concreto que se utilice.
+3. Compilación APK (Android):
+   ```bash
+   npx eas-cli@latest build --platform android --profile preview
+   ```
+
+---
+
+### Registro del commit
+
+```bash
+git config user.email "tu-correo-de-github@ejemplo.com"
+git add mobile/README.md
+git commit -m "docs(mobile): amplía guía de instalación, estructura y funcionalidades"
+git push origin main
+```
